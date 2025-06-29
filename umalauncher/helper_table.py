@@ -234,6 +234,15 @@ class HelperTable():
             for eval_data in data['chara_info']['evaluation_info_array']
         }
 
+        # I'm lazy and don't want to refactor any of this, so I'm just defining these here
+        uaf_sport_rank = {}
+        uaf_sport_rank_total = {}
+        uaf_current_required_rank = {}
+        uaf_current_active_effects = {}
+        uaf_current_active_bonus = {}
+        uaf_sport_competition = {}
+        uaf_consultations_left = {}
+
         for command in all_commands.values():
             if command['command_id'] not in constants.COMMAND_ID_TO_KEY:
                 continue
@@ -606,6 +615,38 @@ class HelperTable():
                 command_key = constants.COMMAND_ID_TO_KEY.get(command_id, None)
                 if command_key and command_key in command_info and 'point_up_info_array' in command_data:
                     command_info[command_key]['point_up_info_array'] = command_data['point_up_info_array']
+
+
+        # Design Your Island
+        if 'pioneer_data_set' in data:
+            dyi_data = data['pioneer_data_set']
+            for command_data in dyi_data.get('command_info_array', []):
+                command_id = command_data['command_id']
+                command_key = constants.COMMAND_ID_TO_KEY.get(command_id, None)
+                if command_key and command_key in command_info and 'params_inc_dec_info_array' in command_data:
+                    command_info[command_key]['params_inc_dec_info_array'] = command_data['params_inc_dec_info_array']
+                    #logger.info(f"Command {command_key} : {command_data['params_inc_dec_info_array']}")
+            for point_gain_data in dyi_data.get('pioneer_point_gain_info_array', []):
+                command_id = point_gain_data['command_id']
+                command_key = constants.COMMAND_ID_TO_KEY.get(command_id, None)
+                if command_key is None:
+                    continue
+                gain_num = point_gain_data['gain_num']
+                #logger.info(f'Point gain {command_key} ({command_id}) : {gain_num}')
+                command_info[constants.COMMAND_ID_TO_KEY[command_id]]['pioneer_point_gain_info_array'] = gain_num
+            #Remove the ticket column if:
+            #  the column exists AND
+            #    the command does not exist
+            #    the command is disabled
+            if constants.COMMAND_ID_TO_KEY[3101] in command_info and \
+                    (not any(command['command_id'] == 3101 for command in data['home_info']['command_info_array'])  or
+                      any(command['command_id'] == 3101 and command['is_enable'] == 0 for command in data['home_info']['command_info_array'])):
+            #        not any(data['command_id'] == 3101 for data in dyi_data.get('pioneer_point_gain_info_array', [])) and\
+            #        not any(data['command_id'] == 3101 for data in dyi_data.get('command_info_array', [])):
+                del command_info[constants.COMMAND_ID_TO_KEY[3101]]
+
+
+
 
 
         main_info = {

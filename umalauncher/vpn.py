@@ -87,7 +87,7 @@ class VPNClient:
             except Exception as e:
                 logger.error(f'VPN connection failed: {e}')
                 logger.error(traceback.format_exc())
-                util.show_warning_box('VPN connection failed', 'VPN connection failed.<br>Make sure you have installed the selected VPN software, and check if your settings are correct inside Uma Launcher.<br>VPN client path must be set when using OpenVPN or NordVPN.<br>Instructions on setting up the auto-VPN feature can be found in the <a href="https://github.com/kevinvg207/umalauncher/blob/main/FAQ.md">Frequency Asked Questions</a>.')
+                util.show_warning_box('VPN connection failed', 'VPN connection failed.<br>Make sure you have installed the selected VPN software, and check if your settings are correct inside Uma Launcher.<br>VPN client path must be set when using OpenVPN or NordVPN.<br>Instructions on setting up the auto-VPN feature can be found in the <a href="https://github.com/qwcan/UmaLauncher/releases/blob/main/FAQ.md">Frequency Asked Questions</a>.')
                 self.disconnect()
                 return False
 

@@ -251,7 +251,7 @@ class DefaultSettings(se.NewSettings):
         ),
         "vpn_message": se.Setting(
             "VPN Help",
-            """<p>Automatic VPN is still experimental. Please report any issues you encounter.<br>For a guide on how to set up automatic VPN, see the guide on the <a href="https://github.com/KevinVG207/UmaLauncher/blob/main/FAQ.md">Frequently Asked Questions</a> page.</p>""",
+            """<p>Automatic VPN is still experimental. Please report any issues you encounter.<br>For a guide on how to set up automatic VPN, see the guide on the <a href="https://github.com/qwcan/UmaLauncher/blob/main/FAQ.md">Frequently Asked Questions</a> page.</p>""",
             None,
             se.SettingType.MESSAGE,
             tab="VPN"
