@@ -8,7 +8,8 @@ SCENARIO_DICT = {
     7: "U.A.F. Ready GO!",
     8: "Great Food Festival",
     9: "Run! Mecha Umamusume",
-    10: "The Twinkle Legends"
+    10: "The Twinkle Legends",
+    11: "Design Your Island"
 }
 
 MOTIVATION_DICT = {
@@ -91,7 +92,20 @@ COMMAND_ID_TO_KEY = {
     2303: "power",
     2304: "guts",
     2305: "wiz",
-    "ss_match": "ss_match"
+    "ss_match": "ss_match",
+    # DYI
+    #0: "unknown"
+    #301: "speed",
+    #390: "stamina",
+    #401: "power",
+    #701: "guts",
+    #801: "wiz",
+    3101: "ticket",
+    3601: "speed",
+    3602: "stamina",
+    3603: "power",
+    3604: "guts",
+    3605: "wiz",
 }
 
 TARGET_TYPE_TO_KEY = {
@@ -251,6 +265,14 @@ GFF_VEG_ID_TO_IMG_ID = {
 }
 
 RMU_KEY_TO_ORDER = {
+    101: 1,
+    105: 2,
+    102: 3,
+    103: 4,
+    106: 5,
+}
+
+DYI_KEY_TO_ORDER = {
     101: 1,
     105: 2,
     102: 3,
