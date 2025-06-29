@@ -135,9 +135,9 @@ def auto_update(umasettings, force=False):
     # Check if we're coming from an update
     if os.path.exists("update.tmp"):
         os.remove("update.tmp")
-        util.show_info_box("Update complete!", f"Uma Launcher updated successfully to v{vstr(script_version)}.<br>To see what's new, <a href=\"https://github.com/qwcan/UmaLauncher/releases/releases/tag/v{vstr(script_version)}\">click here</a>.")
+        util.show_info_box("Update complete!", f"Uma Launcher updated successfully to v{vstr(script_version)}.<br>To see what's new, <a href=\"https://github.com/qwcan/UmaLauncher/releases/tag/v{vstr(script_version)}\">click here</a>.")
 
-    response = util.do_get_request("https://api.github.com/repos/qwcan/UmaLauncher/releases/releases/latest", error_message="Could not check for updates. Please check your internet connection.", ignore_timeout=True)
+    response = util.do_get_request("https://api.github.com/repos/qwcan/UmaLauncher/releases/latest", error_message="Could not check for updates. Please check your internet connection.", ignore_timeout=True)
     if not response:
         return True
     response_json = response.json()
