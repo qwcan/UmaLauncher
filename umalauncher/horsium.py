@@ -46,6 +46,12 @@ def firefox_setup(helper_url, settings):
     
     browser = webdriver.Firefox(service=firefox_service, options=options)
     browser.get(helper_url)
+
+    browser.execute_script(f"window.localStorage.setItem('u-s-en', '\"ja\"')")
+    # Refresh to get the updated localstorage
+    browser.get(helper_url)
+    # Just in case
+    browser.execute_script(f"window.localStorage.setItem('u-s-en', '\"ja\"')")
     return browser
 
 def chromium_setup(service, options_class, driver_class, profile, helper_url, settings, binary_path=None):

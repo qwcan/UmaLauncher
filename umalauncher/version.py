@@ -11,7 +11,7 @@ import util
 import gui
 import glob
 
-VERSION = "1.16.1"
+VERSION = "1.16.2"
 
 def parse_version(version_string: str):
     """Convert version string to tuple."""
@@ -144,9 +144,7 @@ def auto_update(umasettings, force=False):
 
     allow_prerelease = umasettings["beta_optin"]
     latest_release = None
-    logger.info( response_json)
     for release in response_json:
-        logger.info( f"Release: {release}" )
         if release.get('draft', False):
             continue
         if release.get('prerelease', False) and not allow_prerelease:
