@@ -949,3 +949,33 @@ def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
 def setup_gametora(browser: horsium.BrowserWindow):
     gametora_dark_mode(browser)
     gametora_remove_cookies_banner(browser)
+
+
+def set_gametora_server_to_jp(browser):
+    logger.info( "Setting GameTora page to the Japan server")
+    browser.execute_script("""
+        let settings_button = document.querySelectorAll("[class^='styles_header_settings_']");
+        if(settings_button.length > 0) {
+            settings_button[0].click();
+        }
+        //delay to let it the settings open
+        setTimeout(function(){
+            let server_button = document.querySelectorAll("[id^='serverJaCheckbox']");
+            if(server_button.length > 0) {
+                server_button[0].click();
+            }
+        }, 1000);
+        """)
+
+def is_gametora_jp(browser):
+    result = browser.execute_script( """
+    let header = document.querySelectorAll("[class^='styles_header_text_']");
+    if(header.length > 0)
+    {
+        //Can't use innerHtml here for some reason?
+        return header[0].innerText.includes("Japan")
+    }
+    return false 
+    """)
+    logger.info('GameTora page is' + ("" if result else " NOT") + ' set to the Japan server.')
+    return result
