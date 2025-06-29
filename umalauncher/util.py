@@ -152,7 +152,7 @@ def do_get_request(url, error_title=None, error_message=None, ignore_timeout=Fal
 
 def get_game_folder():
     game_data = None
-    with open(os.path.expandvars("%AppData%\dmmgameplayer5\dmmgame.cnf"), "r", encoding='utf-8') as f:
+    with open(os.path.expandvars("%AppData%\\dmmgameplayer5\\dmmgame.cnf"), "r", encoding='utf-8') as f:
         game_data = json.loads(f.read())
     
     if not game_data or not game_data.get('contents'):

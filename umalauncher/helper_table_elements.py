@@ -12,7 +12,8 @@ TABLE_HEADERS = {
     "power": "Power",
     "guts": "Guts",
     "wiz": "Wisdom",
-    "ss_match": "SS Match"
+    "ss_match": "SS Match",
+    "ticket": "Ticket"
 }
 
 class Colors(enum.Enum):
