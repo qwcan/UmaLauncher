@@ -137,14 +137,16 @@ def auto_update(umasettings, force=False):
         os.remove("update.tmp")
         util.show_info_box("Update complete!", f"Uma Launcher updated successfully to v{vstr(script_version)}.<br>To see what's new, <a href=\"https://github.com/qwcan/UmaLauncher/releases/tag/v{vstr(script_version)}\">click here</a>.")
 
-    response = util.do_get_request("https://api.github.com/repos/qwcan/UmaLauncher/releases/latest", error_message="Could not check for updates. Please check your internet connection.", ignore_timeout=True)
+    response = util.do_get_request("https://api.github.com/repos/qwcan/UmaLauncher/releases", error_message="Could not check for updates. Please check your internet connection.", ignore_timeout=True)
     if not response:
         return True
     response_json = response.json()
 
     allow_prerelease = umasettings["beta_optin"]
     latest_release = None
+    logger.info( response_json)
     for release in response_json:
+        logger.info( f"Release: {release}" )
         if release.get('draft', False):
             continue
         if release.get('prerelease', False) and not allow_prerelease:
