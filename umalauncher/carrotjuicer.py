@@ -1,11 +1,14 @@
+import io
 import os
 import time
 import glob
 import traceback
 import math
 import json
+
 import msgpack
 from loguru import logger
+from msgpack import Unpacker
 from selenium.common.exceptions import NoSuchWindowException
 import screenstate_utils
 import util
@@ -14,8 +17,20 @@ import mdb
 import helper_table
 import training_tracker
 import horsium
+import socket
 
-class CarrotJuicer():
+from Cryptodome.Cipher import AES
+
+def unpack(data: bytes, key: bytes, iv: bytes) -> bytes:
+    cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+    decrypted = cipher.decrypt(data)
+    decrypted = decrypted[4:]
+    b = io.BytesIO(decrypted)
+    unpacker = Unpacker(file_like=b)
+    return unpacker.unpack()
+
+
+class CarrotJuicer:
     browser: horsium.BrowserWindow = None
     previous_element = None
     threader = None
@@ -37,6 +52,13 @@ class CarrotJuicer():
     skill_browser = None
     last_skills_rect = None
     skipped_msgpacks = []
+
+    sock: socket = None
+    MAX_BUFFER_SIZE = 65535
+
+    key = None
+    iv = None
+    encrypted_data = None
 
     def __init__(self, threader):
         self.threader = threader
@@ -63,7 +85,14 @@ class CarrotJuicer():
         self.start_time = math.floor(time.time() * 1000)
 
 
-    def load_request(self, msg_path):
+    def load_request(self, msg_path, is_json=False):
+        if is_json:
+            # First 4 bytes are a header
+            unpacked = msgpack.unpackb(msg_path[4:])
+            for key in constants.REQUEST_KEYS_TO_BE_REMOVED:
+                if key in unpacked:
+                    del unpacked[key]
+            return unpacked
         try:
             with open(msg_path, "rb") as in_file:
                 unpacked = msgpack.unpackb(in_file.read()[170:], strict_map_key=False)
@@ -451,8 +480,8 @@ class CarrotJuicer():
         self.screen_state_handler.carrotjuicer_state = screenstate_utils.make_concert_state(music_id, self.threader.screenstate)
         return
 
-    def handle_request(self, message):
-        data = self.load_request(message)
+    def handle_request(self, message, is_json=False):
+        data = self.load_request(message, is_json=is_json)
 
         if not data:
             return
@@ -650,7 +679,6 @@ class CarrotJuicer():
             util.show_error_box("Critical Error", "Uma Launcher has encountered a critical error and will now close.")
             self.threader.stop()
 
-
     def run(self):
         try:
             base_path = util.get_game_folder()
@@ -660,10 +688,22 @@ class CarrotJuicer():
                 util.show_error_box("Uma Launcher: No game install path found.", "This should not happen. Ensure you have the game installed via DMM.")
                 return
 
-            while not self.should_stop:
-                time.sleep(0.25)
+            if self.threader.settings["enable_global_mode"]:
+                port = self.threader.settings["carrotblender_port"]
+                ip_address = self.threader.settings["carrotblender_host"]
+                try:
+                    self.sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+                    self.sock.bind( (ip_address, port) )
+                except socket.error as message:
+                    util.show_warning_box("Uma Launcher: Error initializing CarrotBlender.",
+                                        f"Could not bind to {ip_address}:{port}")
 
-                msg_path = os.path.join(base_path, "CarrotJuicer")
+            while not self.should_stop:
+
+                msg_path = None
+                if not self.threader.settings["enable_global_mode"]:
+                    time.sleep(0.25)
+                    msg_path = os.path.join(base_path, "CarrotJuicer")
 
                 if not self.threader.settings["enable_carrotjuicer"] or not self.threader.settings['enable_browser']:
                     if self.browser and self.browser.alive():
@@ -708,9 +748,52 @@ class CarrotJuicer():
                         logger.error(traceback.format_exc())
                         pass
 
-                messages = self.get_msgpack_batch(msg_path)
-                for message in messages:
-                    self.process_message(message)
+                if not self.threader.settings["enable_global_mode"]:
+                    messages = self.get_msgpack_batch(msg_path)
+                    for message in messages:
+                        self.process_message(message)
+                else:
+                    logger.info("Waiting for message...")
+                    try:
+                        message = self.sock.recv(self.MAX_BUFFER_SIZE)
+                    except Exception as e:
+                        logger.error(f"Socket interrupted: {e}\n{traceback.format_exc()}")
+                        continue
+                    if message == b'':
+                        # Shouldn't happen
+                        logger.error(f"Socket read no data!")
+                        continue
+                    if len(message) < 3:
+                        logger.error( f"Invalid message (invalid length): {message.hex()}")
+                        continue
+                    msg_type = message[0]
+                    msg_len = message[1] * 256 + message[2]
+                    if len(message) < msg_len:
+                        logger.error( f"Invalid message (incomplete): {message.hex()}")
+                        continue
+                    message = message[3:msg_len+3]
+                    if msg_type == 0:# Data
+                        logger.info(f"Processing data: {message.hex()}")
+                        if self.key is not None and self.iv is not None:
+                            unpacked = unpack(message, self.key, self.iv)
+                            self.handle_response(unpacked, is_json=True)
+                            self.key = None
+                            self.iv = None
+                        else:
+                            logger.warning( f"Ignoring message, key and/or IV is not set!")
+                    elif msg_type == 1: # Key
+                        logger.info(f"Processing key: {message.hex()}")
+                        self.key = message
+                    elif msg_type == 2: # IV
+                        logger.info(f"Processing IV: {message.hex()}")
+                        self.iv = message
+                    elif msg_type == 3: # Request (unencrypted msgpack)
+                        logger.info(f"Processing request: {message.hex()}")
+                        self.handle_request( message, is_json=True)
+                    else:
+                        logger.error( f"Invalid message (invalid type): {message.hex()}")
+                        continue
+
         except NoSuchWindowException:
             pass
 
@@ -730,6 +813,10 @@ class CarrotJuicer():
 
     def stop(self):
         self.should_stop = True
+        if self.sock is not None:
+            logger.info("Stopping CarrotSmoothie socket")
+            self.sock.shutdown(socket.SHUT_RDWR)
+            self.sock.close()
 
 
 
