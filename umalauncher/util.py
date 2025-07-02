@@ -332,6 +332,9 @@ def get_window_handle(query: str, type=LAZY) -> str:
 def get_game_handle():
     return get_window_handle("umamusume", type=EXACT)
 
+def get_game_handle_global():
+    return get_window_handle("Umamusume", type=EXACT)
+
 
 def get_position_rgb(image: Image.Image, position: tuple[float,float]) -> tuple[int,int,int]:
     pixel_color = None
@@ -484,11 +487,10 @@ def get_race_name_dict(force=False):
         downloaded_race_name_dict.update(race_name_dict)
     return downloaded_race_name_dict
 
-def create_gametora_helper_url(card_id, scenario_id, support_ids, language="English"):
+def create_gametora_helper_url(card_id, scenario_id, support_ids, language="English", server="ja"):
     support_ids = list(map(str, support_ids))
     language_segment = constants.GT_LANGUAGE_URL_DICT.get(language, "")
-    #TODO set server
-    return f"https://gametora.com/{language_segment}umamusume/training-event-helper?deck={np.base_repr(int(str(card_id) + str(scenario_id)), 36)}-{np.base_repr(int(support_ids[0] + support_ids[1] + support_ids[2]), 36)}-{np.base_repr(int(support_ids[3] + support_ids[4] + support_ids[5]), 36)}?server=ja".lower()
+    return f"https://gametora.com/{language_segment}umamusume/training-event-helper?deck={np.base_repr(int(str(card_id) + str(scenario_id)), 36)}-{np.base_repr(int(support_ids[0] + support_ids[1] + support_ids[2]), 36)}-{np.base_repr(int(support_ids[3] + support_ids[4] + support_ids[5]), 36)}?server={server}".lower()
 
 gm_fragment_dict = {}
 def get_gm_fragment_dict(force=False):

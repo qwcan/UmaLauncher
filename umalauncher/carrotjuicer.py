@@ -128,7 +128,7 @@ class CarrotJuicer:
         d = packet_data['start_chara']
         supports = d['support_card_ids'] + [d['friend_support_card_info']['support_card_id']]
 
-        return util.create_gametora_helper_url(d['card_id'], d['scenario_id'], supports, self.get_gt_language())
+        return util.create_gametora_helper_url(d['card_id'], d['scenario_id'], supports, self.get_gt_language(), "en" if self.threader.settings["enable_global_mode"] else "ja")
 
     def get_gt_language(self):
         lang = "English"
@@ -398,7 +398,7 @@ class CarrotJuicer:
 
                 if not self.browser or not self.browser.current_url().startswith(self.browser.url.split("?",1)[0]):
                     logger.info("GT tab not open, opening tab")
-                    self.helper_url = util.create_gametora_helper_url(outfit_id, scenario_id, supports, self.get_gt_language())
+                    self.helper_url = util.create_gametora_helper_url(outfit_id, scenario_id, supports, self.get_gt_language(), "en" if self.threader.settings["enable_global_mode"] else "ja")
                     logger.debug(f"Helper URL: {self.helper_url}")
                     self.open_helper()
                 
@@ -681,12 +681,14 @@ class CarrotJuicer:
 
     def run(self):
         try:
-            base_path = util.get_game_folder()
+            base_path = None
+            if not self.threader.settings["enable_global_mode"]:
+                base_path = util.get_game_folder()
 
-            if not base_path:
-                logger.error("Packet intercept enabled but no game path found")
-                util.show_error_box("Uma Launcher: No game install path found.", "This should not happen. Ensure you have the game installed via DMM.")
-                return
+                if not base_path:
+                    logger.error("Packet intercept enabled but no game path found")
+                    util.show_error_box("Uma Launcher: No game install path found.", "This should not happen. Ensure you have the game installed via DMM.")
+                    return
 
             if self.threader.settings["enable_global_mode"]:
                 port = self.threader.settings["carrotblender_port"]

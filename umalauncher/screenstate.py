@@ -16,6 +16,7 @@ import dmm
 import mdb
 import vpn
 import umapatcher
+from umalauncher import steam
 
 START_TIME = time.time()
 
@@ -156,7 +157,7 @@ class ScreenStateHandler():
             self.dmm_handle = dmm_handle
             self.dmm_seen = True
 
-        self.check_game()
+        self.check_game(self.threader.settings["enable_global_mode"])
         return
 
 
@@ -215,8 +216,11 @@ class ScreenStateHandler():
         win32clipboard.SetClipboardData(win32clipboard.CF_DIB, image_data)
         win32clipboard.CloseClipboard()
 
-    def check_game(self):
-        game_handle = util.get_game_handle()
+    def check_game(self, is_global):
+        if is_global:
+            game_handle = util.get_game_handle_global()
+        else:
+            game_handle = util.get_game_handle()
         if game_handle:
             self.game_handle = game_handle
             self.game_seen = True
@@ -240,7 +244,7 @@ class ScreenStateHandler():
             umapatcher.unpatch(self.threader)
 
         # Enable VPN if needed
-        if self.threader.settings["vpn_enabled"] and not self.threader.settings["vpn_dmm_only"]:
+        if not self.threader.settings["enable_global_mode"] and self.threader.settings["vpn_enabled"] and not self.threader.settings["vpn_dmm_only"]:
             self.vpn = vpn.create_client(self.threader, cygames=True)
             self.vpn.connect()
 
@@ -258,18 +262,21 @@ class ScreenStateHandler():
 
             # Game was never seen before
             if not self.game_seen:
-                self.check_game()
+                self.check_game(self.threader.settings["enable_global_mode"])
 
                 if onetime:
                     onetime = False
                     # If DMM is not seen AND Game is not seen: Start DMM
                     if not self.game_seen:
                         # Enable DMM-only VPN
-                        if self.threader.settings["vpn_enabled"] and self.threader.settings["vpn_dmm_only"]:
+                        if not self.threader.settings["enable_global_mode"] and self.threader.settings["vpn_enabled"] and self.threader.settings["vpn_dmm_only"]:
                             self.vpn = vpn.create_client(self.threader)
                             self.vpn.connect()
 
-                        dmm.start()
+                        if self.threader.settings["enable_global_mode"]:
+                            steam.start()
+                        else:
+                            dmm.start()
                 
                 if not self.game_closed:
                     continue
@@ -288,7 +295,7 @@ class ScreenStateHandler():
                 continue
 
             # Close DMM
-            if not self.dmm_closed and self.threader.settings["autoclose_dmm"]:
+            if not self.threader.settings["enable_global_mode"] and not self.dmm_closed and self.threader.settings["autoclose_dmm"]:
                 # Attempt to close DMM, even if it doesn't exist
                 new_dmm_handle = dmm.get_dmm_handle()
                 if new_dmm_handle:

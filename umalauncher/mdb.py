@@ -7,6 +7,14 @@ import gui
 
 DB_PATH = os.path.expandvars("%userprofile%\\appdata\\locallow\\Cygames\\umamusume\\master\\master.mdb")
 
+def enable_global():
+    global DB_PATH
+    DB_PATH = os.path.expandvars("%userprofile%\\appdata\\locallow\\Cygames\\Umamusume\\master\\master.mdb")
+
+def disable_global():
+    global DB_PATH
+    DB_PATH = os.path.expandvars("%userprofile%\\appdata\\locallow\\Cygames\\umamusume\\master\\master.mdb")
+
 def update_mdb_cache():
     logger.info("Reloading cached dicts.")
     all_update_funcs = UPDATE_FUNCS + util.UPDATE_FUNCS
