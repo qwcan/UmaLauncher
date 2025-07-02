@@ -4,6 +4,7 @@ import helper_table_elements as hte
 import util
 import settings_elements as se
 import constants
+from loguru import logger
 
 def compensate_overcap(game_state, command):
     # Compensate for overcapped stats by doubling any gained stats that bring the current stats over 1200.
@@ -907,6 +908,22 @@ class GFFVegetablesSettings(se.NewSettings):
         ),
     }
 
+class DYISettings(se.NewSettings):
+
+    _settings = {
+        "highlight_max": se.Setting(
+            "Highlight max",
+            "Highlights the facility with the greatest point gain.",
+            True,
+            se.SettingType.BOOL
+        ),
+        "highlight_max_color": se.Setting(
+            "Highlight max color",
+            "The color to use to highlight the facility with the greatest point gain.",
+            "#90EE90",
+            se.SettingType.COLOR
+        ),
+    }
 
 class GFFVegetablesRow(hte.Row):
     long_name = "GFF Vegetable Gain"
@@ -1052,6 +1069,49 @@ class RMUResearchDistributionRow(hte.Row):
 
         return super().to_tr(command_info)
 
+class DYIPointsDistributionRow(hte.Row):
+    long_name = "Design Your Island points distribution"
+    short_name = "Points <br>Distribution"
+    description = "[Scenario-specific] Shows the distribution of  points gained on each facility. Hidden in other scenarios."
+
+
+    def __init__(self):
+        super().__init__()
+        self.settings = DYISettings()
+
+    def _generate_cells(self, game_state) -> list[hte.Cell]:
+        if list(game_state.values())[0]['scenario_id'] != 11:
+            return []
+
+        cells = [hte.Cell(self.short_name, title=self.description)]
+
+        point_sums = {}
+
+        for command_key, command_data in game_state.items():
+            point_sum = 0
+            #logger.info( f"Command key: {command_key}")
+            #logger.info( f"Command data: {command_data}")
+            if 'pioneer_point_gain_info_array' in command_data:
+                #logger.info( f"Command data: {command_data['pioneer_point_gain_info_array']}")
+                point_sum = command_data['pioneer_point_gain_info_array']
+            point_sums[command_key] = point_sum
+
+        max_points = max(point_sums.values())
+
+        for command_key, points in point_sums.items():
+            if self.settings.highlight_max.value and points == max_points and max_points > 0:
+                cells.append(hte.Cell(points, bold=True, color=self.settings.highlight_max_color.value))
+            else:
+                cells.append(hte.Cell(points))
+
+        return cells
+
+    def to_tr(self, command_info):
+        if list(command_info.values())[0]['scenario_id'] != 11:
+            return ""
+
+        return super().to_tr(command_info)
+
 
 class RowTypes(Enum):
     CURRENT_STATS = CurrentStatsRow
@@ -1077,6 +1137,7 @@ class RowTypes(Enum):
     GFF_VEGETABLES_DIST = GFFVegetablesDistributionRow
     RMU_RESEARCH = RMUTotalResearchLevelRow
     RMU_RESEARCH_DIST = RMUResearchDistributionRow
+    DYI_POINTS_DIST = DYIPointsDistributionRow
 
 
 class DefaultPreset(hte.Preset):

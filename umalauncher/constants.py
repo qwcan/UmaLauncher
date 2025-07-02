@@ -8,7 +8,8 @@ SCENARIO_DICT = {
     7: "U.A.F. Ready GO!",
     8: "Great Food Festival",
     9: "Run! Mecha Umamusume",
-    10: "The Twinkle Legends"
+    10: "The Twinkle Legends",
+    11: "Design Your Island"
 }
 
 MOTIVATION_DICT = {
@@ -46,11 +47,11 @@ SUPPORT_CARD_TYPE_DISPLAY_DICT = {
 }
 
 SUPPORT_TYPE_TO_COMMAND_IDS = {
-    "speed": [101, 601, 901, 1101, 2101, 2201, 2301],
-    "stamina": [105, 602, 905, 1102, 2102, 2202, 2302],
-    "power": [102, 603, 902, 1103, 2103, 2203, 2303],
-    "guts": [103, 604, 903, 1104, 2104, 2204, 2304],
-    "wiz": [106, 605, 906, 1105, 2105, 2205, 2305],
+    "speed": [101, 601, 901, 1101, 2101, 2201, 2301, 3601],
+    "stamina": [105, 602, 905, 1102, 2102, 2202, 2302, 3602],
+    "power": [102, 603, 902, 1103, 2103, 2203, 2303, 3603],
+    "guts": [103, 604, 903, 1104, 2104, 2204, 2304, 3604],
+    "wiz": [106, 605, 906, 1105, 2105, 2205, 2305, 3605],
     "friend": [],
     "group": []
 }
@@ -91,7 +92,14 @@ COMMAND_ID_TO_KEY = {
     2303: "power",
     2304: "guts",
     2305: "wiz",
-    "ss_match": "ss_match"
+    "ss_match": "ss_match",
+    # DYI
+    3101: "ticket",
+    3601: "speed",
+    3602: "stamina",
+    3603: "power",
+    3604: "guts",
+    3605: "wiz",
 }
 
 TARGET_TYPE_TO_KEY = {
@@ -251,6 +259,14 @@ GFF_VEG_ID_TO_IMG_ID = {
 }
 
 RMU_KEY_TO_ORDER = {
+    101: 1,
+    105: 2,
+    102: 3,
+    103: 4,
+    106: 5,
+}
+
+DYI_KEY_TO_ORDER = {
     101: 1,
     105: 2,
     102: 3,
