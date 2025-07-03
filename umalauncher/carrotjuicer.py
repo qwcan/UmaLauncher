@@ -23,7 +23,7 @@ import socket
 from Cryptodome.Cipher import AES
 
 def unpack(data: bytes, key: bytes, iv: bytes) -> bytes:
-    logger.info(f"Unpacking:\nData: {data.hex()}\nKey: {key.hex()}\nIV: {iv.hex()}")
+    logger.debug(f"Unpacking:\nData: {data.hex()}\nKey: {key.hex()}\nIV: {iv.hex()}")
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
     decrypted = cipher.decrypt(data)
     decrypted = decrypted[4:]
@@ -361,9 +361,10 @@ class CarrotJuicer:
                 if 'start_time' in data['chara_info']:
                     training_id = data['chara_info']['start_time']
                 else:
-                    logger.info("No start_time, using strftime")
+                    #TODO: fix this!
+                    logger.debug("No start_time, using strftime")
                     training_id = time.strftime("%Y-%m-%d %H:%M:%S")
-                if not self.training_tracker or not self.training_tracker.training_id_matches(training_id):
+                if not self.threader.settings["enable_global_mode"] and (not self.training_tracker or not self.training_tracker.training_id_matches(training_id)):
                     # Update cached dicts first
                     mdb.update_mdb_cache()
 
@@ -769,10 +770,10 @@ class CarrotJuicer:
                     for message in messages:
                         self.process_message(message)
                 else:
-                    logger.info("Waiting for message...")
+                    logger.debug("Waiting for message...")
                     try:
                         message = self.sock.recv(self.MAX_BUFFER_SIZE)
-                        logger.info(f"Received {len(message)} bytes of data")
+                        logger.debug(f"Received {len(message)} bytes of data")
                     except Exception as e:
                         logger.error(f"Socket interrupted: {e}\n{traceback.format_exc()}")
                         continue
@@ -793,7 +794,7 @@ class CarrotJuicer:
                         message = message[3:msg_len+3]
 
                     if msg_type == 0:# Data (full)
-                        logger.info(f"Processing data: {message.hex()}")
+                        logger.debug(f"Processing data: {message.hex()}")
                         self.encrypted_data = message
                         #TODO parse multipart messages
                         # NEED TO DO THIS OR ELSE EVERYTHING BREAKS
@@ -809,16 +810,16 @@ class CarrotJuicer:
                             pass
                             #logger.warning( f"Ignoring message, key and/or IV is not set!")
                     elif msg_type == 1: # Key
-                        logger.info(f"Processing key: {message.hex()}")
+                        logger.debug(f"Processing key: {message.hex()}")
                         self.key = message
                     elif msg_type == 2: # IV
-                        logger.info(f"Processing IV: {message.hex()}")
+                        logger.debug(f"Processing IV: {message.hex()}")
                         self.iv = message
 
                         if self.key is not None and self.iv is not None and self.encrypted_data is not None and self.encrypted_data != b'':
                             unpacked = unpack(self.encrypted_data, self.key, self.iv)
-                            logger.info("Unpacked message:")
-                            logger.info( unpacked )
+                            logger.debug("Unpacked message:")
+                            logger.debug( unpacked )
                             self.handle_response(unpacked, is_json=True)
                             #TODO: should these be reset?
                             self.key = None
@@ -827,19 +828,19 @@ class CarrotJuicer:
                         else:
                             logger.warning( f"Ignoring message: data, key and/or IV is not set!")
                     elif msg_type == 3: # Request (unencrypted msgpack)
-                        logger.info(f"Processing request: {message.hex()}")
-                        logger.info(f"Unpacked request: {msgpack.unpackb(message[4:])}")
+                        logger.debug(f"Processing request: {message.hex()}")
+                        logger.debug(f"Unpacked request: {msgpack.unpackb(message[4:])}")
                         self.handle_request( message, is_json=True)
                     elif msg_type == 4: # Data (multipart header)
                         chunks_left = message[1]
                         self.encrypted_data = b''
-                        logger.info(f"Got multipart response header with {chunks_left} chunks")
+                        logger.debug(f"Got multipart response header with {chunks_left} chunks")
                     elif msg_type == 5: # Data (multipart chunk)
                         if chunks_left < 1:
                             logger.error( "Got unexpected multipart message chunk!")
                             continue
                         chunks_left -= 1
-                        logger.info(f"Got chunk of size {msg_len}: {message.hex()}")
+                        logger.debug(f"Got chunk of size {msg_len}: {message.hex()}")
                         self.encrypted_data += message
                     else:
                         logger.error( f"Invalid message (invalid type): {message.hex()}")
