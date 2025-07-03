@@ -216,7 +216,7 @@ class Updater():
     def run(self):
         logger.debug("Updater thread started.")
         for asset in self.assets:
-            if asset['name'] == "UmaLauncher.exe":
+            if asset['name'] == ("UmaLauncher (Global).exe" if 'UL_IS_GLOBAL' in os.environ else "UmaLauncher.exe"):
                 # Found the correct file, download and overwrite
                 download_url = asset['browser_download_url']
                 parsed = urlparse(download_url)

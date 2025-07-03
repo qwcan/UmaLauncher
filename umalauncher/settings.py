@@ -323,27 +323,25 @@ class DefaultSettings(se.NewSettings):
             se.SettingType.COMMANDBUTTON,
             hidden=True
         ),
-        "enable_global_mode": se.Setting(
-            "Enable global Steam release support",
-            "Enables support for the global Steam release.",
-            False,
-            se.SettingType.BOOL
-        ),
-        "carrotblender_port": se.Setting(
-            "CarrotBlender Port",
-            "Port to listen on for CarrotBlender. Only used if support for the global Steam release is enabled.",
-            17229,
-            se.SettingType.INT,
-            max_value=65535
-        ),
-        "carrotblender_host": se.Setting(
-            "CarrotBlender Hostname",
-            "Hostname/IP address to listen on for CarrotBlender. Don't change this unless you know what you're doing. Only used if support for the global Steam release is enabled.",
-            '127.0.0.1',
-            se.SettingType.STRING,
-            hidden=True
-        )
     }
+    if 'IS_UL_GLOBAL' in os.environ:
+        _settings.update({
+            "carrotjuicer_port": se.Setting(
+                "CarrotJuicer Port",
+                "Port to listen on for CarrotJuicer. Only used if support for the global Steam release is enabled.",
+                17229,
+                se.SettingType.INT,
+                max_value=65535
+            ),
+            "carrotjuicer_host": se.Setting(
+                "CarrotJuicer Hostname",
+                "Hostname/IP address to listen on for CarrotJuicer. Don't change this unless you know what you're doing. Only used if support for the global Steam release is enabled.",
+                '127.0.0.1',
+                se.SettingType.STRING,
+                hidden=True
+            )
+        })
+
 
 
 class SettingsHandler():

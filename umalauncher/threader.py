@@ -53,10 +53,8 @@ class Threader():
         gui.THREADER = self
 
         self.settings = settings.SettingsHandler(self)
-        if self.settings["enable_global_mode"]:
-            mdb.enable_global()
-        else:
-            mdb.disable_global()
+        if 'IS_UL_GLOBAL' in os.environ:
+            logger.info( ":pokkeAAAAA:")
         
         # Ensure only a single instance is running.
         self.check_single_instance()

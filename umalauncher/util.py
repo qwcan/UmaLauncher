@@ -26,7 +26,10 @@ if hasattr(sys, "_MEIPASS"):
     os.chdir(relative_dir)
 is_debug = is_script
 
-appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher\\")
+if 'IS_UL_GLOBAL' in os.environ:
+    appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher-Global\\")
+else:
+    appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher\\")
 
 if is_script:
     appdata_dir = os.path.join(relative_dir, "appdata")

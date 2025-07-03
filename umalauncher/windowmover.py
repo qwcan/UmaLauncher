@@ -1,3 +1,4 @@
+import os
 import time
 from loguru import logger
 import util
@@ -176,7 +177,7 @@ class WindowMover():
             self.threader.stop()
 
     def run(self):
-        if self.threader.settings["enable_global_mode"]:
+        if 'IS_UL_GLOBAL' in os.environ:
             logger.info("Disabling window mover (in global mode)")
             return
         while not self.should_stop and not self.screenstate.game_handle:
