@@ -3,6 +3,11 @@
 Here's a list of things you may want to know about Uma Launcher. If you have a question that is not answered here, feel free to ask in the [Discord server](https://discord.gg/wvGHW65C6A). (Head to the `#help-needed` channel.)
 
 <details>
+<summary><b>What versions of Uma Musume does Uma Launcher support?</b></summary>
+Uma Launcher currently only supports the Japanese DMM version of the Uma Musume. Support for the global Steam release is in progress, and support for the Japanese Steam release might come at a later date.
+</details>
+
+<details>
 <summary><b>How to set up automatic VPN</b></summary>
 
 **This feature is experimental. Please report any bugs you may encounter.**
@@ -37,11 +42,9 @@ Keep in mind that this feature is experimental, so be sure to let me know if any
 <details>
 <summary><b>CarrotJuicer issues / The automatic training event helper window does not show up when a training run is started/continued.</b></summary>
 
-This feature requires you install the CarrotJuicer mod for Uma Musume. Please carefully read <a href="https://umapyoi.net/uma-launcher" target="_blank">the instructions</a> on how to install it. (See bottom of the instructions section on how to use if you already use Trainers' Legend G or Noccu's English Patch.)<br>
-If you installed CarrotJuicer according to the instructions but nothing happens when you start/enter a training run, try the following:
+This feature requires you install the CarrotJuicer mod for Uma Musume. Note that the official releases of CarrotJuicer are no longer supported, and will crash the game if you attempt to use them. The instructions below are only for the Japanese version of the game distributed through DMM, and do not apply to the Japanese Steam release or global Steam release.
 
 * Check if a folder called `CarrotJuicer` was created in the same folder as the game's executable `umamusume.exe`. Start the game once without Uma Launcher. You should see a command prompt when the game starts, and it should stay open. Do something in the game that requires a server connection (when it says `Connecing...` in the top-right of the game.) There should now be a few `.msgpack` files in the `CarrotJuicer` folder, assuming you did not have Uma Launcher running. If any of these things did not happen, CarrotJuicer is not installed/working correctly. Make sure it is installed in the correct folder. Check where you installed the game. Instructions are below.
-* If you are sure you placed `version.dll` in the right place, but no `CarrotJuicer` folder is created when starting the game, try renaming the dll to `umpdc.dll`. Sometimes this fixes the issue. (Unsure why.)
 * Make sure CarrotJuicer functionality is enabled in the preferences of Uma Launcher.
   * Right-click the horseshoe icon in the taskbar tray and click on `Preferences`. Make sure `Enable CarrotJuicer` is checked.
 * Make sure Uma Launcher uses the correct game folder when it looks for CarrotJuicer's output.

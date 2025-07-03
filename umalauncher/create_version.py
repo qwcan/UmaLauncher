@@ -10,6 +10,15 @@ def generate():
         original_filename="UmaLauncher.exe",
         product_name="Uma Launcher"
     )
+    # Global release
+    pyinstaller_versionfile.create_versionfile(
+        output_file="version_global.rc",
+        version=version.VERSION,
+        file_description="Uma Launcher (Global)",
+        internal_name="Uma Launcher (Global)",
+        original_filename="UmaLauncher (Global).exe",
+        product_name="Uma Launcher (Global)"
+    )
 
 if __name__ == "__main__":
     generate()
