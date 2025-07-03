@@ -176,6 +176,9 @@ class WindowMover():
             self.threader.stop()
 
     def run(self):
+        if self.threader.settings["enable_global_mode"]:
+            logger.info("Disabling window mover (in global mode)")
+            return
         while not self.should_stop and not self.screenstate.game_handle:
             time.sleep(0.25)
 

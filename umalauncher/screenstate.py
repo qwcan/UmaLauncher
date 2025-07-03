@@ -16,7 +16,7 @@ import dmm
 import mdb
 import vpn
 import umapatcher
-from umalauncher import steam
+import steam
 
 START_TIME = time.time()
 

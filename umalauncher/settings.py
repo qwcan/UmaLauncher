@@ -333,7 +333,8 @@ class DefaultSettings(se.NewSettings):
             "CarrotBlender Port",
             "Port to listen on for CarrotBlender. Only used if support for the global Steam release is enabled.",
             17229,
-            se.SettingType.INT
+            se.SettingType.INT,
+            max_value=65535
         ),
         "carrotblender_host": se.Setting(
             "CarrotBlender Hostname",

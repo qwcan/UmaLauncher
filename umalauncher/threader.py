@@ -1,5 +1,6 @@
 import util
 import sys
+
 gzips = list([path for path in sys.argv if path.endswith(".gz")])
 if gzips:
     # User dropped file(s) on the launcher.
@@ -28,6 +29,7 @@ import training_tracker
 import gui
 import umaserver
 import horsium
+import mdb
 
 THREAD_OBJECTS = []
 THREADS = []
@@ -51,6 +53,10 @@ class Threader():
         gui.THREADER = self
 
         self.settings = settings.SettingsHandler(self)
+        if self.settings["enable_global_mode"]:
+            mdb.enable_global()
+        else:
+            mdb.disable_global()
         
         # Ensure only a single instance is running.
         self.check_single_instance()

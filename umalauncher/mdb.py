@@ -1,5 +1,7 @@
 import sqlite3
 import os
+import traceback
+
 from loguru import logger
 import util
 import constants
@@ -345,13 +347,16 @@ def get_mant_item_string_dict(force=False):
     global MANT_ITEM_STRING_DICT
     if force or not MANT_ITEM_STRING_DICT:
         with Connection() as (_, cursor):
-            cursor.execute(
-                """SELECT "index", text FROM text_data WHERE category = 225"""
-            )
-            rows = cursor.fetchall()
+            try:
+                cursor.execute(
+                    """SELECT "index", text FROM text_data WHERE category = 225"""
+                )
+                rows = cursor.fetchall()
+                MANT_ITEM_STRING_DICT.update({row[0]: row[1] for row in rows})
+            except sqlite3.OperationalError as e:
+                logger.error(f"get_mant_item_string_dict failed: {e}\n{traceback.format_exc()}")
 
-        MANT_ITEM_STRING_DICT.update({row[0]: row[1] for row in rows})
-    
+
     return MANT_ITEM_STRING_DICT
 
 GL_LESSON_DICT = {}
@@ -359,12 +364,15 @@ def get_gl_lesson_dict(force=False):
     global GL_LESSON_DICT
     if force or not GL_LESSON_DICT:
         with Connection() as (_, cursor):
-            cursor.execute(
-                """SELECT s.id, t.text, s.square_type FROM single_mode_live_square s JOIN text_data t ON t."index" = s.square_title_text_id AND t.category = 209"""
-            )
-            rows = cursor.fetchall()
+            try:
+                cursor.execute(
+                    """SELECT s.id, t.text, s.square_type FROM single_mode_live_square s JOIN text_data t ON t."index" = s.square_title_text_id AND t.category = 209"""
+                )
+                rows = cursor.fetchall()
 
-        GL_LESSON_DICT.update({row[0]: (row[1], row[2]) for row in rows})
+                GL_LESSON_DICT.update({row[0]: (row[1], row[2]) for row in rows})
+            except sqlite3.OperationalError as e:
+                logger.error( f"get_gl_lesson_dict failed: {e}\n{traceback.format_exc()}")
     
     return GL_LESSON_DICT
 
@@ -373,13 +381,15 @@ def get_group_card_effect_ids(force=False):
     global GROUP_CARD_EFFECT_IDS
     if force or not GROUP_CARD_EFFECT_IDS:
         with Connection() as (_, cursor):
-            cursor.execute(
-                """SELECT id, effect_id FROM support_card_data WHERE support_card_type = 3"""
-            )
-            rows = cursor.fetchall()
-        
-        if rows:
-            GROUP_CARD_EFFECT_IDS[:] = rows  # Thanks StellatedCube
+            try:
+                cursor.execute(
+                    """SELECT id, effect_id FROM support_card_data WHERE support_card_type = 3"""
+                )
+                rows = cursor.fetchall()
+                if rows:
+                    GROUP_CARD_EFFECT_IDS[:] = rows  # Thanks StellatedCube
+            except sqlite3.OperationalError as e:
+                logger.error(f"get_group_card_effect_ids failed: {e}\n{traceback.format_exc()}")
 
     return GROUP_CARD_EFFECT_IDS
 
@@ -438,10 +448,15 @@ def get_scouting_score_to_rank_dict(force=False):
     global SCOUTING_SCORE_TO_RANK_DICT
     if force or not SCOUTING_SCORE_TO_RANK_DICT:
         with Connection() as (_, cursor):
-            cursor.execute(
-                """SELECT team_min_value FROM team_building_rank"""
-            )
-            rows = cursor.fetchall()
+            try:
+
+                cursor.execute(
+                    """SELECT team_min_value FROM team_building_rank"""
+                )
+                rows = cursor.fetchall()
+            except sqlite3.OperationalError as e:
+                logger.error(f"get_group_card_effect_ids failed: {e}\n{traceback.format_exc()}")
+                rows = []
 
         tmp_dict = {}
         for i, row in enumerate(rows):

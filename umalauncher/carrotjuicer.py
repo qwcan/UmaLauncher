@@ -5,6 +5,7 @@ import glob
 import traceback
 import math
 import json
+from inspect import trace
 
 import msgpack
 from loguru import logger
@@ -22,6 +23,7 @@ import socket
 from Cryptodome.Cipher import AES
 
 def unpack(data: bytes, key: bytes, iv: bytes) -> bytes:
+    logger.info(f"Unpacking:\nData: {data.hex()}\nKey: {key.hex()}\nIV: {iv.hex()}")
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
     decrypted = cipher.decrypt(data)
     decrypted = decrypted[4:]
@@ -88,11 +90,15 @@ class CarrotJuicer:
     def load_request(self, msg_path, is_json=False):
         if is_json:
             # First 4 bytes are a header
-            unpacked = msgpack.unpackb(msg_path[4:])
-            for key in constants.REQUEST_KEYS_TO_BE_REMOVED:
-                if key in unpacked:
-                    del unpacked[key]
-            return unpacked
+            try:
+                unpacked = msgpack.unpackb(msg_path[4:])
+                for key in constants.REQUEST_KEYS_TO_BE_REMOVED:
+                    if key in unpacked:
+                        del unpacked[key]
+                return unpacked
+            except Exception as e:
+                logger.error(f"Error unpacking request: {e}\n{traceback.format_exc()}")
+                return None
         try:
             with open(msg_path, "rb") as in_file:
                 unpacked = msgpack.unpackb(in_file.read()[170:], strict_map_key=False)
@@ -351,7 +357,12 @@ class CarrotJuicer:
             if 'chara_info' in data:
                 # Inside training run.
 
-                training_id = data['chara_info']['start_time']
+                training_id = ""
+                if 'start_time' in data['chara_info']:
+                    training_id = data['chara_info']['start_time']
+                else:
+                    logger.info("No start_time, using strftime")
+                    training_id = time.strftime("%Y-%m-%d %H:%M:%S")
                 if not self.training_tracker or not self.training_tracker.training_id_matches(training_id):
                     # Update cached dicts first
                     mdb.update_mdb_cache()
@@ -695,11 +706,14 @@ class CarrotJuicer:
                 ip_address = self.threader.settings["carrotblender_host"]
                 try:
                     self.sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+                    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536*3)
+                    logger.info(f"Max buffer size: {self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}" )
                     self.sock.bind( (ip_address, port) )
                 except socket.error as message:
                     util.show_warning_box("Uma Launcher: Error initializing CarrotBlender.",
                                         f"Could not bind to {ip_address}:{port}")
 
+            chunks_left = 0
             while not self.should_stop:
 
                 msg_path = None
@@ -758,6 +772,7 @@ class CarrotJuicer:
                     logger.info("Waiting for message...")
                     try:
                         message = self.sock.recv(self.MAX_BUFFER_SIZE)
+                        logger.info(f"Received {len(message)} bytes of data")
                     except Exception as e:
                         logger.error(f"Socket interrupted: {e}\n{traceback.format_exc()}")
                         continue
@@ -765,33 +780,67 @@ class CarrotJuicer:
                         # Shouldn't happen
                         logger.error(f"Socket read no data!")
                         continue
-                    if len(message) < 3:
+                    if len(message) < 2:
                         logger.error( f"Invalid message (invalid length): {message.hex()}")
                         continue
                     msg_type = message[0]
-                    msg_len = message[1] * 256 + message[2]
-                    if len(message) < msg_len:
-                        logger.error( f"Invalid message (incomplete): {message.hex()}")
-                        continue
-                    message = message[3:msg_len+3]
-                    if msg_type == 0:# Data
+                    msg_len = 0
+                    if msg_type != 4:
+                        msg_len = message[1] * 256 + message[2]
+                        if len(message) < msg_len:
+                            logger.error( f"Invalid message (incomplete): {message.hex()}")
+                            continue
+                        message = message[3:msg_len+3]
+
+                    if msg_type == 0:# Data (full)
                         logger.info(f"Processing data: {message.hex()}")
+                        self.encrypted_data = message
+                        #TODO parse multipart messages
+                        # NEED TO DO THIS OR ELSE EVERYTHING BREAKS
                         if self.key is not None and self.iv is not None:
-                            unpacked = unpack(message, self.key, self.iv)
-                            self.handle_response(unpacked, is_json=True)
-                            self.key = None
-                            self.iv = None
+                            pass
+                            #unpacked = unpack(message, self.key, self.iv)
+                            #self.handle_response(unpacked, is_json=True)
+                            #TODO: should these be reset?
+                            #self.key = None
+                            #self.iv = None
+
                         else:
-                            logger.warning( f"Ignoring message, key and/or IV is not set!")
+                            pass
+                            #logger.warning( f"Ignoring message, key and/or IV is not set!")
                     elif msg_type == 1: # Key
                         logger.info(f"Processing key: {message.hex()}")
                         self.key = message
                     elif msg_type == 2: # IV
                         logger.info(f"Processing IV: {message.hex()}")
                         self.iv = message
+
+                        if self.key is not None and self.iv is not None and self.encrypted_data is not None and self.encrypted_data != b'':
+                            unpacked = unpack(self.encrypted_data, self.key, self.iv)
+                            logger.info("Unpacked message:")
+                            logger.info( unpacked )
+                            self.handle_response(unpacked, is_json=True)
+                            #TODO: should these be reset?
+                            self.key = None
+                            self.iv = None
+                            self.encrypted_data = None
+                        else:
+                            logger.warning( f"Ignoring message: data, key and/or IV is not set!")
                     elif msg_type == 3: # Request (unencrypted msgpack)
                         logger.info(f"Processing request: {message.hex()}")
+                        logger.info(f"Unpacked request: {msgpack.unpackb(message[4:])}")
                         self.handle_request( message, is_json=True)
+                    elif msg_type == 4: # Data (multipart header)
+                        chunks_left = message[1]
+                        self.encrypted_data = b''
+                        logger.info(f"Got multipart response header with {chunks_left} chunks")
+                    elif msg_type == 5: # Data (multipart chunk)
+                        if chunks_left < 1:
+                            logger.error( "Got unexpected multipart message chunk!")
+                            continue
+                        chunks_left -= 1
+                        logger.info(f"Got chunk of size {msg_len}: {message.hex()}")
+                        self.encrypted_data += message
                     else:
                         logger.error( f"Invalid message (invalid type): {message.hex()}")
                         continue
