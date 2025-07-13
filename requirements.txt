@@ -46,7 +46,7 @@ python-dateutil==2.9.0.post0
 pywin32==308
 pywin32-ctypes==0.2.3
 PyYAML==6.0.2
-requests==2.32.3
+requests==2.32.4
 selenium==4.27.1
 setuptools==75.6.0
 six==1.17.0
