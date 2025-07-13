@@ -1,5 +1,7 @@
 # Uma Launcher
-Software that enhances the Uma Musume (DMM Version) experience.
+Software that enhances the Uma Musume (Japanese DMM Version) experience.
+
+## NOTE: *Uma Launcher only works with the Japanese DMM version of Uma Musume! The Japanese and Global Steam releases are not currently supported!*
 
 [Frequently Asked Questions](FAQ.md)
 
@@ -8,13 +10,19 @@ For questions and feedback, join the Discord server:
 [![Uma Launcher Discord server](https://discordapp.com/api/guilds/1089576859349569646/widget.png?style=banner2)](https://discord.gg/wvGHW65C6A)
 
 ## Requirements (Optional but recommended)
+### NOTE: CarrotJuicer is no longer maintained and the version available on GitHub does not work with the current Japanese DMM Version of Uma Musume. 
+<details>
+  <summary>(OBSOLETE) CarrotJuicer</summary>
+  
 - [EXNOA-CarrotJuicer](https://github.com/CNA-Bld/EXNOA-CarrotJuicer) (Not made by me.)
   - Download the latest version's `Umamusume.7z`: [![Latest release](https://img.shields.io/github/v/release/CNA-Bld/EXNOA-CarrotJuicer)](https://github.com/CNA-Bld/EXNOA-CarrotJuicer/releases/latest)
   - Extract CarrotJuicer's `version.dll` to the game's installation folder.<br>(The same folder where `umamusume.exe` is located.)
   - While optional, CarrotJuicer allows Uma Launcher to extract information from the network packets the game sends/receives. This information is necessary to determine the current status of the game, and needed for most of the features of Uma Launcher to work.
 
+</details>
+
 ## Download
-First, read the requirements above. Then download the latest version's `UmaLauncher.exe`:
+Download the latest version's `UmaLauncher.exe`:
 
 [![Latest release](https://img.shields.io/github/v/release/qwcan/UmaLauncher)](https://github.com/qwcan/UmaLauncher/releases/latest)
 
@@ -24,16 +32,6 @@ Download the latest release's `UmaLauncher.exe` and run it. Right-click the hors
 On first launch or when you change the game's location, you may be asked to select the installation location for the game if you are not using the default location.
 
 When a new version of Uma Launcher is available, you will be notified on startup. You may choose to update, or postpone the update temporarily or permanently.
-
-## Usage with Trainers' Legend G
-If you want to use all features of Uma Launcher together with [Trainers' Legend G](https://github.com/MinamiChiwa/Trainers-Legend-G) (or the [English translation project](https://github.com/noccu/umamusu-translate)), you can do so by adding CarrotJuicer to TLG's config.json file. Follow these steps:
-
-1. Rename CarrotJuicer's `version.dll` to something else, e.g. `carrotjuicer.dll`.
-2. Copy the renamed `carrotjuicer.dll` to the same directory as `umamusume.exe`.
-3. Install TLG and/or the English translation patch as normal.
-4. Make a copy of `config.json` in case something goes wrong.
-5. Patch your existing `config.json` using the [TLG Config Patcher](https://umapyoi.net/tlg-config-patcher) page and overwrite the original `config.json`. (Change the mod DLL if you named it something different.)<br>
-If you understand json files, you can manually add `"carrotjuicer.dll"` to the config file like this:<br>`"loadDll": ["carrotjuicer.dll"]`
 
 ## Features
 ### Launch Uma Musume simply by running one file
