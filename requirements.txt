@@ -39,7 +39,7 @@ pyparsing==3.2.0
 pypresence==4.3.0
 PyQt5==5.15.11
 PyQt5-Qt5==5.15.2
-PyQt5_sip==12.16.1
+PyQt5_sip==12.17.0
 PySocks==1.7.1
 pystray==0.19.5
 python-dateutil==2.9.0.post0
