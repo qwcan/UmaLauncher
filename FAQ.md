@@ -42,6 +42,8 @@ Keep in mind that this feature is experimental, so be sure to let me know if any
 <details>
 <summary><b>CarrotJuicer issues / The automatic training event helper window does not show up when a training run is started/continued.</b></summary>
 
+## NOTE: The current version of CarrotJuicer no longer works with the Japanese DMM Version of Uma Musume. The instructions below have been left as a reference, but no longer apply to the current version of the game.
+
 This feature requires you install the CarrotJuicer mod for Uma Musume. Note that the official releases of CarrotJuicer are no longer supported, and will crash the game if you attempt to use them. The instructions below are only for the Japanese version of the game distributed through DMM, and do not apply to the Japanese Steam release or global Steam release.
 
 * Check if a folder called `CarrotJuicer` was created in the same folder as the game's executable `umamusume.exe`. Start the game once without Uma Launcher. You should see a command prompt when the game starts, and it should stay open. Do something in the game that requires a server connection (when it says `Connecing...` in the top-right of the game.) There should now be a few `.msgpack` files in the `CarrotJuicer` folder, assuming you did not have Uma Launcher running. If any of these things did not happen, CarrotJuicer is not installed/working correctly. Make sure it is installed in the correct folder. Check where you installed the game. Instructions are below.
