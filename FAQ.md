@@ -44,8 +44,7 @@ Keep in mind that this feature is experimental, so be sure to let me know if any
 
 ## NOTE: The current version of CarrotJuicer no longer works with the Japanese DMM Version of Uma Musume. The instructions below have been left as a reference, but no longer apply to the current version of the game.
 
-This feature requires you install the CarrotJuicer mod for Uma Musume. Please carefully read <a href="https://umapyoi.net/uma-launcher" target="_blank">the instructions</a> on how to install it. (See bottom of the instructions section on how to use if you already use Trainers' Legend G or Noccu's English Patch.)<br>
-If you installed CarrotJuicer according to the instructions but nothing happens when you start/enter a training run, try the following:
+This feature requires you install the CarrotJuicer mod for Uma Musume. Note that the official releases of CarrotJuicer are no longer supported, and will crash the game if you attempt to use them. The instructions below are only for the Japanese version of the game distributed through DMM, and do not apply to the Japanese Steam release or global Steam release.
 
 * Check if a folder called `CarrotJuicer` was created in the same folder as the game's executable `umamusume.exe`. Start the game once without Uma Launcher. You should see a command prompt when the game starts, and it should stay open. Do something in the game that requires a server connection (when it says `Connecing...` in the top-right of the game.) There should now be a few `.msgpack` files in the `CarrotJuicer` folder, assuming you did not have Uma Launcher running. If any of these things did not happen, CarrotJuicer is not installed/working correctly. Make sure it is installed in the correct folder. Check where you installed the game. Instructions are below.
 * Make sure CarrotJuicer functionality is enabled in the preferences of Uma Launcher.

@@ -818,14 +818,22 @@ class CarrotJuicer:
                         self.iv = message
 
                         if self.key is not None and self.iv is not None and self.encrypted_data is not None and self.encrypted_data != b'':
-                            unpacked = unpack(self.encrypted_data, self.key, self.iv)
-                            logger.debug("Unpacked message:")
-                            logger.debug( unpacked )
-                            self.handle_response(unpacked, is_json=True)
-                            #TODO: should these be reset?
-                            self.key = None
-                            self.iv = None
-                            self.encrypted_data = None
+                            try:
+                                unpacked = unpack(self.encrypted_data, self.key, self.iv)
+                                logger.debug("Unpacked message:")
+                                logger.debug(unpacked)
+                                self.handle_response(unpacked, is_json=True)
+                                # TODO: should these be reset?
+                                self.key = None
+                                self.iv = None
+                                self.encrypted_data = None
+                            except Exception as e:
+                                logger.error(f"Error decoding and handling message: {e}")
+                                logger.error(traceback.format_exc())
+                                # TODO: should these be reset?
+                                self.key = None
+                                self.iv = None
+                                self.encrypted_data = None
                         else:
                             logger.warning( f"Ignoring message: data, key and/or IV is not set!")
                     elif msg_type == 3: # Request (unencrypted msgpack)
