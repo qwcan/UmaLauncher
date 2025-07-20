@@ -394,7 +394,8 @@ class CarrotJuicer:
                 logger.debug(f"Skills list: {self.skills_list}")
 
                 # Add request to tracker
-                self.add_response_to_tracker(data)
+                if self.training_tracker:
+                    self.add_response_to_tracker(data)
 
                 # Training info
                 outfit_id = data['chara_info']['card_id']
