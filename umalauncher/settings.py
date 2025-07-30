@@ -1,6 +1,8 @@
 import os
 import json
 import uuid
+from math import trunc
+
 from win32com.shell import shell
 import traceback
 from loguru import logger
@@ -324,23 +326,29 @@ class DefaultSettings(se.NewSettings):
             hidden=True
         ),
     }
+
+    # Enable global-specific config and hide jp-only config
     if 'IS_UL_GLOBAL' in os.environ:
         _settings.update({
-            "carrotjuicer_port": se.Setting(
-                "CarrotJuicer Port",
-                "Port to listen on for CarrotJuicer. Only used if support for the global Steam release is enabled.",
+            "carrotblender_port": se.Setting(
+                "CarrotBlender Port",
+                "Port to listen on for CarrotBlender.",
                 17229,
                 se.SettingType.INT,
                 max_value=65535
             ),
-            "carrotjuicer_host": se.Setting(
-                "CarrotJuicer Hostname",
-                "Hostname/IP address to listen on for CarrotJuicer. Don't change this unless you know what you're doing. Only used if support for the global Steam release is enabled.",
+            "carrotblender_host": se.Setting(
+                "CarrotBlender Hostname",
+                "Hostname/IP address to listen on for CarrotBlender. Don't change this unless you know what you're doing.",
                 '127.0.0.1',
                 se.SettingType.STRING,
                 hidden=True
             )
+            # TODO: Max buffer size?
         })
+        _settings.get("enable_carrotjuicer").name = "Enable CarrotBlender"
+        _settings.get("enable_carrotjuicer").description = "Enable CarrotBlender functionality."
+        _settings.get("hide_carrotjuicer").hidden=True
 
 
 

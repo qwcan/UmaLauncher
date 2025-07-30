@@ -704,10 +704,11 @@ class CarrotJuicer:
                     return
 
             if 'IS_UL_GLOBAL' in os.environ:
-                port = self.threader.settings["carrotjuicer_port"]
-                ip_address = self.threader.settings["carrotjuicer_host"]
+                port = self.threader.settings["carrotblender_port"]
+                ip_address = self.threader.settings["carrotblender_host"]
                 try:
                     self.sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+                    #TODO: CONFIGURATION
                     self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536*3)
                     logger.info(f"Max buffer size: {self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}" )
                     self.sock.bind( (ip_address, port) )
@@ -817,6 +818,7 @@ class CarrotJuicer:
                         logger.debug(f"Processing IV: {message.hex()}")
                         self.iv = message
 
+                        # TODO: check chunks_left to see if we dropped one or more
                         if self.key is not None and self.iv is not None and self.encrypted_data is not None and self.encrypted_data != b'':
                             try:
                                 unpacked = unpack(self.encrypted_data, self.key, self.iv)
