@@ -13,7 +13,7 @@ pyinstaller~=6.14.2
 pypresence~=4.3.0
 PyQt5~=5.15.11
 pystray~=0.19.5
-pywin32==310
+pywin32==311
 requests~=2.32.4
 selenium~=4.34.2
 Werkzeug~=3.1.3
