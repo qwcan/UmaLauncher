@@ -185,9 +185,9 @@ class CarrotJuicer():
 
 
     EVENT_ID_TO_POS_STRING = {
-        7005: '(1st)',
-        7006: '(2nd-5th)',
-        7007: '(6th or worse)'
+        7005: 'レース勝利！',  # (1st)
+        7006: 'レース入着',  # (2nd-5th)
+        7007: 'レース敗北'  # (6th or worse)
     }
 
     def get_after_race_event_title(self, event_id):
@@ -207,8 +207,7 @@ class CarrotJuicer():
             grade_text = "G2/G3"
         else:
             grade_text = "G1"
-
-        return [f"{grade_text} {self.EVENT_ID_TO_POS_STRING[event_id]}"]
+        return [f"{self.EVENT_ID_TO_POS_STRING[event_id]} ({grade_text})"]
 
     def handle_response(self, message, is_json=False):
         if is_json:
