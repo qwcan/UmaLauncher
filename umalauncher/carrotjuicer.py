@@ -220,9 +220,14 @@ class CarrotJuicer:
 
 
     EVENT_ID_TO_POS_STRING = {
-        7005: '(1st)',
-        7006: '(2nd-5th)',
-        7007: '(6th or worse)'
+        7005: 'レース勝利！', # (1st)
+        7006: 'レース入着',  # (2nd-5th)
+        7007: 'レース敗北'   # (6th or worse)
+    }
+    EVENT_ID_TO_POS_STRING_GLB = {
+        7005: 'Victory!',
+        7006: 'Solid Showing',
+        7007: 'Defeat'
     }
 
     def get_after_race_event_title(self, event_id):
@@ -242,8 +247,11 @@ class CarrotJuicer:
             grade_text = "G2/G3"
         else:
             grade_text = "G1"
+        if 'IS_UL_GLOBAL' in os.environ:
+            return [f"{self.EVENT_ID_TO_POS_STRING_GLB[event_id]} ({grade_text})"]
+        else:
+            return [f"{self.EVENT_ID_TO_POS_STRING[event_id]} ({grade_text})"]
 
-        return [f"{grade_text} {self.EVENT_ID_TO_POS_STRING[event_id]}"]
 
     def handle_response(self, message, is_json=False):
         if is_json:
@@ -462,7 +470,7 @@ class CarrotJuicer:
                     event_element = self.determine_event_element(event_titles)
 
                     if not event_element:
-                        logger.debug(f"Could not find event on GT page: {event_data['story_id']}")
+                        logger.debug(f"Could not find event on GT page: {event_data['story_id']} : {event_titles}")
                     self.browser.execute_script("""
                         if (arguments[0]) {
                             arguments[0].click();
