@@ -202,7 +202,7 @@ class CarrotJuicer():
 
         grade_text = ""
         if race_grade > 300:
-            grade_text = "OP/Pre-OP"
+            grade_text = "Pre/OP"
         elif race_grade > 100:
             grade_text = "G2/G3"
         else:
