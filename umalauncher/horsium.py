@@ -31,7 +31,7 @@ def firefox_setup(helper_url, settings):
     firefox_service = FirefoxService(executable_path=driver_path)
     firefox_service.creation_flags = CREATE_NO_WINDOW
     profile = webdriver.FirefoxProfile(util.get_asset("ff_profile"))
-    profile.set_preference("security.fileuri.strict_origin_policy", False) # Disable CORS protections
+    profile.set_preference("security.fileuri.strict_origin_policy", False) # Disable CORS protections TODO this doesn't work, so window position doesn't get saved.
     options = webdriver.FirefoxOptions()
     options.profile = profile
 
