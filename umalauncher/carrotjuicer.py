@@ -1104,28 +1104,28 @@ def gametora_dark_mode(browser: horsium.BrowserWindow):
 
 
 def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
-    pass
-    # TODO: Is the cookies banner gone now?
-    #times = 20
-    #found_banner = True
-    #while not browser.execute_script("""return document.getElementById("adnote");"""):
-    #    times -= 1
-    #    if times <= 0:
-    #        found_banner = False
-    #        logger.warning( "Unable to find cookies banner after 5 seconds")
-    #        break
-    #    time.sleep(0.25)
-    #
-    #if found_banner:
-    #    # Hide the cookies banner
-    #    browser.execute_script("""document.getElementById("adnote").style.display = 'none';""")
+    # Hide the cookies banner
+    browser.execute_script("""
+            if( window.removeCookiesId != null ) {
+                window.removeCookiesId = setInterval( function() {
+                    if( document.getElementById("adnote") != null) {
+                        document.getElementById("adnote").style.display = 'none';
+                    }
+                }, 5 * 1000);
+            }
+            """)
 
 def gametora_close_ad_banner(browser: horsium.BrowserWindow):
     # Close the ad banner at the bottom
     browser.execute_script("""
+            if( window.removeBannerAdId != null ) {
+                window.removeBannerAdId = setInterval( function() {
                     if( document.getElementsByClassName("publift-widget-sticky_footer-container")[0] != null ){
                         document.getElementsByClassName("publift-widget-sticky_footer-container")[0].classList.add("closed")
-                    }""")
+                    }
+                }, 5 * 1000);
+            }
+            """)
 
 
 
