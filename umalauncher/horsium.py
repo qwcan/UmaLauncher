@@ -31,6 +31,7 @@ def firefox_setup(helper_url, settings):
     firefox_service = FirefoxService(executable_path=driver_path)
     firefox_service.creation_flags = CREATE_NO_WINDOW
     profile = webdriver.FirefoxProfile(util.get_asset("ff_profile"))
+    profile.set_preference("security.fileuri.strict_origin_policy", False) # Disable CORS protections
     options = webdriver.FirefoxOptions()
     options.profile = profile
 
@@ -64,6 +65,7 @@ def chromium_setup(service, options_class, driver_class, profile, helper_url, se
     options.add_argument("--user-data-dir=" + str(util.get_asset(profile)))
     options.add_argument("--remote-debugging-port=9222")
     options.add_argument("--new-window")
+    options.add_argument("--disable-web-security") # Disable CORS protections
     
     if not settings['enable_browser_override']:
         options.add_argument("--app=" + helper_url)
