@@ -1106,7 +1106,7 @@ def gametora_dark_mode(browser: horsium.BrowserWindow):
 def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
     # Hide the cookies banner
     browser.execute_script("""
-            if( window.removeCookiesId != null ) {
+            if( window.removeCookiesId == null ) {
                 window.removeCookiesId = setInterval( function() {
                     if( document.getElementById("adnote") != null) {
                         document.getElementById("adnote").style.display = 'none';
@@ -1118,7 +1118,7 @@ def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
 def gametora_close_ad_banner(browser: horsium.BrowserWindow):
     # Close the ad banner at the bottom
     browser.execute_script("""
-            if( window.removeBannerAdId != null ) {
+            if( window.removeBannerAdId == null ) {
                 window.removeBannerAdId = setInterval( function() {
                     if( document.getElementsByClassName("publift-widget-sticky_footer-container")[0] != null ){
                         document.getElementsByClassName("publift-widget-sticky_footer-container")[0].classList.add("closed")
