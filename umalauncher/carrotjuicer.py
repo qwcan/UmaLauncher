@@ -955,7 +955,7 @@ def gametora_dark_mode(browser: horsium.BrowserWindow):
 
 
 def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
-    # Hide the cookies banner
+    # Hide the cookies banner(s)
     browser.execute_script("""
             if( window.removeCookiesId == null ) {
                 window.removeCookiesId = setInterval( function() {
@@ -965,6 +965,16 @@ def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
                 }, 5 * 1000);
             }
             """)
+    browser.execute_script("""
+                if( window.removeCookiesId == null ) {
+                    window.removeCookiesId = setInterval( function() {
+                        if( document.getElementById("qc-cmp2-container") != null) {
+                            document.getElementById("qc-cmp2-container").remove();
+                        }
+                    }, 5 * 1000);
+                }
+                """)
+
 
 def gametora_close_ad_banner(browser: horsium.BrowserWindow):
     # Close the ad banner at the bottom
