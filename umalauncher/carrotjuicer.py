@@ -149,6 +149,8 @@ class CarrotJuicer:
             f.write(json.dumps(packet, indent=4, ensure_ascii=False))
 
     def open_helper(self):
+        if self.should_stop:
+            return
         self.close_browser()
 
         start_pos = self.threader.settings["browser_position"]
@@ -292,6 +294,7 @@ class CarrotJuicer:
                     document.querySelectorAll("[class^='compatibility_viewer_item_'][aria-expanded=true]").forEach(e => e.click());
                     """
                 )
+                gametora_close_ad_banner(self.browser)
 
             # Run ended
             if 'single_mode_factor_select_common' in data:
@@ -615,6 +618,8 @@ class CarrotJuicer:
 
 
     def update_skill_window(self):
+        if self.should_stop:
+            return
         if not self.skill_browser:
             self.skill_browser = horsium.BrowserWindow("https://gametora.com/umamusume/skills", self.threader, rect=self.threader.settings['skills_position'], run_at_launch=setup_skill_window)
         else:
@@ -1039,6 +1044,7 @@ def setup_helper_page(browser: horsium.BrowserWindow):
     browser.execute_script("""document.querySelector("[class^='filters_confirm_button_']").click()""")
 
     gametora_remove_cookies_banner(browser)
+    gametora_close_ad_banner( browser )
 
 def setup_skill_window(browser: horsium.BrowserWindow):
     # Setup callback for window position
@@ -1083,6 +1089,7 @@ def setup_skill_window(browser: horsium.BrowserWindow):
     browser.execute_script("""document.querySelector("[class^='utils_padbottom_half_']").querySelector("button").click();""")
 
     gametora_remove_cookies_banner(browser)
+    gametora_close_ad_banner(browser)
 
 def gametora_dark_mode(browser: horsium.BrowserWindow):
     # Enable dark mode (the only reasonable color scheme)
@@ -1097,16 +1104,36 @@ def gametora_dark_mode(browser: horsium.BrowserWindow):
 
 
 def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
-    while not browser.execute_script("""return document.getElementById("adnote");"""):
-        time.sleep(0.25)
+    pass
+    # TODO: Is the cookies banner gone now?
+    #times = 20
+    #found_banner = True
+    #while not browser.execute_script("""return document.getElementById("adnote");"""):
+    #    times -= 1
+    #    if times <= 0:
+    #        found_banner = False
+    #        logger.warning( "Unable to find cookies banner after 5 seconds")
+    #        break
+    #    time.sleep(0.25)
+    #
+    #if found_banner:
+    #    # Hide the cookies banner
+    #    browser.execute_script("""document.getElementById("adnote").style.display = 'none';""")
 
-    # Hide the cookies banner
-    browser.execute_script("""document.getElementById("adnote").style.display = 'none';""")
+def gametora_close_ad_banner(browser: horsium.BrowserWindow):
+    # Close the ad banner at the bottom
+    browser.execute_script("""
+                    if( document.getElementsByClassName("publift-widget-sticky_footer-container")[0] != null ){
+                        document.getElementsByClassName("publift-widget-sticky_footer-container")[0].classList.add("closed")
+                    }""")
+
+
 
 
 def setup_gametora(browser: horsium.BrowserWindow):
     gametora_dark_mode(browser)
     gametora_remove_cookies_banner(browser)
+    gametora_close_ad_banner(browser)
 
 
 def set_gametora_server_to_jp(browser):
