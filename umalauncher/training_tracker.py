@@ -210,6 +210,13 @@ class CommandType(Enum):
     DynamicHammer = 2303
     LikeASubmarine = 2304
     AcrobatArrow = 2305
+    # DYI
+    IslandTicket = 3101
+    IslandSpeed = 3601
+    IslandStamina = 3602
+    IslandPower = 3603
+    IslandGuts = 3604
+    IslandWisdom = 3605
 
 
 @dataclass
@@ -341,8 +348,26 @@ class TrainingAnalyzer():
             elif 'race_scenario' in resp and resp['race_scenario']:
                 # Race packet
                 this_horse_data = resp['race_start_info']['race_horse_data'][0]
+                # Check what turn it should be
+                current_turn = 0
+                if 'current_turn' in req:
+                    current_turn = req['current_turn']
+                elif 'single_mode_race_start_request_common' in req and 'current_turn' in req['single_mode_race_start_request_common']:
+                    current_turn = req['single_mode_race_start_request_common']['current_turn']
+                elif 'single_mode_race_end_request_common' in req and 'current_turn' in req['single_mode_race_end_request_common']:
+                    current_turn = req['single_mode_race_end_request_common']['current_turn']
+                elif 'single_mode_race_out_request_common' in req and 'current_turn' in req['single_mode_race_out_request_common']:
+                    current_turn = req['single_mode_race_out_request_common']['current_turn']
+                elif 'single_mode_race_end_request_common' in req and 'current_turn' in req['single_mode_race_end_request_common']:
+                    current_turn = req['single_mode_race_end_request_common']['current_turn']
+
+                else:
+                    logger.warning("Could not find turn number.")
+                    logger.warning("Request:", req)
+                    logger.warning("Response:", resp)
+
                 action = TrainingAction(
-                    turn = req['current_turn'],
+                    turn = current_turn,
                     speed = this_horse_data['speed'],
                     stamina = this_horse_data['stamina'],
                     power = this_horse_data['pow'],
@@ -588,6 +613,36 @@ class TrainingAnalyzer():
             if req['command_type'] == 8:
                 action.action_type = ActionType.Infirmary
                 return
+        elif 'single_mode_exec_command_request_common' in req and req['single_mode_exec_command_request_common'] \
+                and 'command_type' in req['single_mode_exec_command_request_common'] and req['single_mode_exec_command_request_common']['command_type']:
+            # Training
+            if req['single_mode_exec_command_request_common']['command_type'] == 1:
+                action.action_type = ActionType.Training
+                action.text = CommandType(req['single_mode_exec_command_request_common']['command_id']).name
+                if req['single_mode_exec_command_request_common']['command_id'] not in self.last_failure_rates:
+                    action.value = -1
+                else:
+                    action.value = self.last_failure_rates[req['single_mode_exec_command_request_common']['command_id']]
+                return
+
+            # Resting
+            if req['single_mode_exec_command_request_common']['command_type'] == 7:
+                action.action_type = ActionType.Rest
+                return
+
+            # Outing
+            if req['single_mode_exec_command_request_common']['command_type'] == 3:
+                action.action_type = ActionType.Outing
+                select_id = req['single_mode_exec_command_request_common']['select_id']
+                chara_id = self.chara_id if select_id == 0 else select_id
+                action.text = self.chara_names_dict[chara_id]
+                return
+
+            # Infirmary
+            if req['single_mode_exec_command_request_common']['command_type'] == 8:
+                action.action_type = ActionType.Infirmary
+                return
+
 
         if 'gain_skill_info_array' in req and req['gain_skill_info_array']:
             # Skill(s) bought
