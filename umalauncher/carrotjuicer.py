@@ -733,9 +733,13 @@ class CarrotJuicer():
 
 
     def stop(self):
+        global should_stop
+        should_stop = True
         self.should_stop = True
 
 
+# Evil global to fix quitting
+should_stop = False
 
 
 def setup_helper_page(browser: horsium.BrowserWindow):
@@ -888,6 +892,7 @@ def setup_helper_page(browser: horsium.BrowserWindow):
     gametora_close_ad_banner( browser )
 
 def setup_skill_window(browser: horsium.BrowserWindow):
+    global should_stop
     # Setup callback for window position
     browser.execute_script("""
     window.send_screen_rect = function() {
@@ -914,6 +919,8 @@ def setup_skill_window(browser: horsium.BrowserWindow):
     # Expand settings
     browser.execute_script("""document.querySelector("[class^='utils_padbottom_half_']").querySelector("button").click();""")
     while not browser.execute_script("""return document.querySelector("label[for='highlightCheckbox']");"""):
+        if should_stop:
+            return
         time.sleep(0.25)
 
     # Enable highlight
@@ -933,9 +940,12 @@ def setup_skill_window(browser: horsium.BrowserWindow):
     gametora_close_ad_banner(browser)
 
 def gametora_dark_mode(browser: horsium.BrowserWindow):
+    global should_stop
     # Enable dark mode (the only reasonable color scheme)
     browser.execute_script("""document.querySelector("[class^='styles_header_settings_']").click()""")
     while not browser.execute_script("""return document.querySelector("[class^='filters_toggle_button_']");"""):
+        if should_stop:
+            return
         time.sleep(0.25)
     
     dark_enabled = browser.execute_script("""return document.querySelector("[class^='tooltips_tooltip_']").querySelector("[class^='filters_toggle_button_']").childNodes[0].querySelector("input").checked;""")
@@ -945,28 +955,38 @@ def gametora_dark_mode(browser: horsium.BrowserWindow):
 
 
 def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
-    pass
-    # TODO: Is the cookies banner gone now?
-    #times = 20
-    #found_banner = True
-    #while not browser.execute_script("""return document.getElementById("adnote");"""):
-    #    times -= 1
-    #    if times <= 0:
-    #        found_banner = False
-    #        logger.warning( "Unable to find cookies banner after 5 seconds")
-    #        break
-    #    time.sleep(0.25)
-    #
-    #if found_banner:
-    #    # Hide the cookies banner
-    #    browser.execute_script("""document.getElementById("adnote").style.display = 'none';""")
+    # Hide the cookies banner(s)
+    browser.execute_script("""
+            if( window.removeCookiesId == null ) {
+                window.removeCookiesId = setInterval( function() {
+                    if( document.getElementById("adnote") != null) {
+                        document.getElementById("adnote").style.display = 'none';
+                    }
+                }, 5 * 1000);
+            }
+            """)
+    browser.execute_script("""
+                if( window.removeCookiesId == null ) {
+                    window.removeCookiesId = setInterval( function() {
+                        if( document.getElementById("qc-cmp2-container") != null) {
+                            document.getElementById("qc-cmp2-container").remove();
+                        }
+                    }, 5 * 1000);
+                }
+                """)
+
 
 def gametora_close_ad_banner(browser: horsium.BrowserWindow):
     # Close the ad banner at the bottom
     browser.execute_script("""
+            if( window.removeBannerAdId == null ) {
+                window.removeBannerAdId = setInterval( function() {
                     if( document.getElementsByClassName("publift-widget-sticky_footer-container")[0] != null ){
                         document.getElementsByClassName("publift-widget-sticky_footer-container")[0].classList.add("closed")
-                    }""")
+                    }
+                }, 5 * 1000);
+            }
+            """)
 
 
 
