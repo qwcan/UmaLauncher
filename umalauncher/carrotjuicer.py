@@ -149,6 +149,8 @@ class CarrotJuicer:
             f.write(json.dumps(packet, indent=4, ensure_ascii=False))
 
     def open_helper(self):
+        if self.should_stop:
+            return
         self.close_browser()
 
         start_pos = self.threader.settings["browser_position"]
@@ -220,9 +222,14 @@ class CarrotJuicer:
 
 
     EVENT_ID_TO_POS_STRING = {
-        7005: '(1st)',
-        7006: '(2nd-5th)',
-        7007: '(6th or worse)'
+        7005: 'レース勝利！', # (1st)
+        7006: 'レース入着',  # (2nd-5th)
+        7007: 'レース敗北'   # (6th or worse)
+    }
+    EVENT_ID_TO_POS_STRING_GLB = {
+        7005: 'Victory!',
+        7006: 'Solid Showing',
+        7007: 'Defeat'
     }
 
     def get_after_race_event_title(self, event_id):
@@ -237,13 +244,16 @@ class CarrotJuicer:
 
         grade_text = ""
         if race_grade > 300:
-            grade_text = "OP/Pre-OP"
+            grade_text = "Pre/OP"
         elif race_grade > 100:
             grade_text = "G2/G3"
         else:
             grade_text = "G1"
+        if 'IS_UL_GLOBAL' in os.environ:
+            return [f"{self.EVENT_ID_TO_POS_STRING_GLB[event_id]} ({grade_text})"]
+        else:
+            return [f"{self.EVENT_ID_TO_POS_STRING[event_id]} ({grade_text})"]
 
-        return [f"{grade_text} {self.EVENT_ID_TO_POS_STRING[event_id]}"]
 
     def handle_response(self, message, is_json=False):
         if is_json:
@@ -284,6 +294,7 @@ class CarrotJuicer:
                     document.querySelectorAll("[class^='compatibility_viewer_item_'][aria-expanded=true]").forEach(e => e.click());
                     """
                 )
+                gametora_close_ad_banner(self.browser)
 
             # Run ended
             if 'single_mode_factor_select_common' in data:
@@ -462,7 +473,7 @@ class CarrotJuicer:
                     event_element = self.determine_event_element(event_titles)
 
                     if not event_element:
-                        logger.debug(f"Could not find event on GT page: {event_data['story_id']}")
+                        logger.debug(f"Could not find event on GT page: {event_data['story_id']} : {event_titles}")
                     self.browser.execute_script("""
                         if (arguments[0]) {
                             arguments[0].click();
@@ -607,6 +618,8 @@ class CarrotJuicer:
 
 
     def update_skill_window(self):
+        if self.should_stop:
+            return
         if not self.skill_browser:
             self.skill_browser = horsium.BrowserWindow("https://gametora.com/umamusume/skills", self.threader, rect=self.threader.settings['skills_position'], run_at_launch=setup_skill_window)
         else:
@@ -704,10 +717,11 @@ class CarrotJuicer:
                     return
 
             if 'IS_UL_GLOBAL' in os.environ:
-                port = self.threader.settings["carrotjuicer_port"]
-                ip_address = self.threader.settings["carrotjuicer_host"]
+                port = self.threader.settings["carrotblender_port"]
+                ip_address = self.threader.settings["carrotblender_host"]
                 try:
                     self.sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+                    #TODO: CONFIGURATION
                     self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536*3)
                     logger.info(f"Max buffer size: {self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}" )
                     self.sock.bind( (ip_address, port) )
@@ -817,6 +831,7 @@ class CarrotJuicer:
                         logger.debug(f"Processing IV: {message.hex()}")
                         self.iv = message
 
+                        # TODO: check chunks_left to see if we dropped one or more
                         if self.key is not None and self.iv is not None and self.encrypted_data is not None and self.encrypted_data != b'':
                             try:
                                 unpacked = unpack(self.encrypted_data, self.key, self.iv)
@@ -1029,6 +1044,7 @@ def setup_helper_page(browser: horsium.BrowserWindow):
     browser.execute_script("""document.querySelector("[class^='filters_confirm_button_']").click()""")
 
     gametora_remove_cookies_banner(browser)
+    gametora_close_ad_banner( browser )
 
 def setup_skill_window(browser: horsium.BrowserWindow):
     # Setup callback for window position
@@ -1073,6 +1089,7 @@ def setup_skill_window(browser: horsium.BrowserWindow):
     browser.execute_script("""document.querySelector("[class^='utils_padbottom_half_']").querySelector("button").click();""")
 
     gametora_remove_cookies_banner(browser)
+    gametora_close_ad_banner(browser)
 
 def gametora_dark_mode(browser: horsium.BrowserWindow):
     # Enable dark mode (the only reasonable color scheme)
@@ -1087,16 +1104,36 @@ def gametora_dark_mode(browser: horsium.BrowserWindow):
 
 
 def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
-    while not browser.execute_script("""return document.getElementById("adnote");"""):
-        time.sleep(0.25)
-
     # Hide the cookies banner
-    browser.execute_script("""document.getElementById("adnote").style.display = 'none';""")
+    browser.execute_script("""
+            if( window.removeCookiesId == null ) {
+                window.removeCookiesId = setInterval( function() {
+                    if( document.getElementById("adnote") != null) {
+                        document.getElementById("adnote").style.display = 'none';
+                    }
+                }, 5 * 1000);
+            }
+            """)
+
+def gametora_close_ad_banner(browser: horsium.BrowserWindow):
+    # Close the ad banner at the bottom
+    browser.execute_script("""
+            if( window.removeBannerAdId == null ) {
+                window.removeBannerAdId = setInterval( function() {
+                    if( document.getElementsByClassName("publift-widget-sticky_footer-container")[0] != null ){
+                        document.getElementsByClassName("publift-widget-sticky_footer-container")[0].classList.add("closed")
+                    }
+                }, 5 * 1000);
+            }
+            """)
+
+
 
 
 def setup_gametora(browser: horsium.BrowserWindow):
     gametora_dark_mode(browser)
     gametora_remove_cookies_banner(browser)
+    gametora_close_ad_banner(browser)
 
 
 def set_gametora_server_to_jp(browser):
