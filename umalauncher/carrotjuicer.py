@@ -890,7 +890,7 @@ class CarrotJuicer:
     def stop(self):
         self.should_stop = True
         if self.sock is not None:
-            logger.info("Stopping CarrotSmoothie socket")
+            logger.info("Stopping CarrotBlender socket")
             self.sock.shutdown(socket.SHUT_RDWR)
             self.sock.close()
 
