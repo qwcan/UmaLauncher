@@ -1385,7 +1385,7 @@ class UmaErrorPopup(qtw.QMessageBox):
             version_str = version.VERSION
             if util.is_script:
                 version_str += ".script"
-            resp = requests.post("https://umapyoi.net/api/v1/umalauncher/error", json={"traceback": traceback_str, "user_id": user_id, "version": version_str})
+            resp = requests.post("https://umalauncher.uc.r.appspot.com/api/v1/umalauncher/error", json={"traceback": traceback_str, "user_id": user_id, "version": version_str})
             resp.raise_for_status()
         except Exception:
             util.show_error_box("Error", "Failed to upload error report.")
