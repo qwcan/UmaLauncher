@@ -11,7 +11,7 @@ import util
 import gui
 import glob
 
-VERSION = "1.16.7"
+VERSION = "1.16.8"
 
 def parse_version(version_string: str):
     """Convert version string to tuple."""
@@ -207,6 +207,7 @@ def auto_update(umasettings, force=False):
     return False
 
 
+# TODO: make windows defender not throw a fit when it sees this
 class Updater():
     assets = None
     close_me = False

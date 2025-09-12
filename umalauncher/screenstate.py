@@ -232,6 +232,7 @@ class ScreenStateHandler():
             self.threader.stop()
 
     def run(self):
+        # TODO: remove Carotene entirely
         # If Carotene was enabled in the past, run the deprecation procedure.
         if "enable_english_patch" in self.threader.settings and self.threader.settings["enable_english_patch"]:
             logger.info("Disabling Carotene as it has been deprecated.")
