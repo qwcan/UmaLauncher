@@ -661,7 +661,7 @@ class CarrotJuicer():
 
             if not base_path:
                 logger.error("Packet intercept enabled but no game path found")
-                util.show_error_box("Uma Launcher: No game install path found.", "This should not happen. Ensure you have the game installed via DMM.")
+                util.show_error_box("Uma Launcher: No game install path found.", "Ensure you have the game installed via DMM.")
                 return
 
             while not self.should_stop:
