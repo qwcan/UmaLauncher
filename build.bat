@@ -1,5 +1,2 @@
-cd ./umalauncher
-python create_version.py
-pyinstaller threader.spec
-pyinstaller threader_global.spec
-cd ..
+./build_global.bat
+./build_jp.bat

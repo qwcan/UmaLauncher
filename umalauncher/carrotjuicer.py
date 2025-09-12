@@ -6,6 +6,7 @@ import traceback
 import math
 import json
 from inspect import trace
+from datetime import datetime
 
 import msgpack
 from loguru import logger
@@ -267,7 +268,7 @@ class CarrotJuicer:
         if self.threader.settings["save_packets"]:
             logger.debug("Response:")
             logger.debug(json.dumps(data))
-            self.to_json(data, "packet_in.json")
+            self.to_json(data, "packet_in_" + str(datetime.now()) +".json")
 
         try:
             if 'data' not in data:
@@ -513,7 +514,7 @@ class CarrotJuicer:
         if self.threader.settings["save_packets"]:
             logger.debug("Request:")
             logger.debug(json.dumps(data))
-            self.to_json(data, "packet_out.json")
+            self.to_json(data, "packet_out" + str(datetime.now()) + ".json")
 
         self.previous_request = data
 
@@ -713,7 +714,7 @@ class CarrotJuicer:
 
                 if not base_path:
                     logger.error("Packet intercept enabled but no game path found")
-                    util.show_error_box("Uma Launcher: No game install path found.", "This should not happen. Ensure you have the game installed via DMM.")
+                    util.show_error_box("Uma Launcher: No game install path found.", "Ensure you have the game installed.")
                     return
 
             if 'IS_UL_GLOBAL' in os.environ:

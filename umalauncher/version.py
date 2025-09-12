@@ -207,6 +207,7 @@ def auto_update(umasettings, force=False):
     return False
 
 
+# TODO: make windows defender not throw a fit when it sees this
 class Updater():
     assets = None
     close_me = False
