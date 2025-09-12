@@ -1379,16 +1379,25 @@ class UmaErrorPopup(qtw.QMessageBox):
         self.setIcon(msg_icon)
         self.show()
 
+
     def upload_error_report(self, traceback_str, user_id):
-        try:
-            logger.debug("Uploading error report")
-            version_str = version.VERSION
-            if util.is_script:
-                version_str += ".script"
-            resp = requests.post("https://umalauncher.uc.r.appspot.com/api/v1/umalauncher/error", json={"traceback": traceback_str, "user_id": user_id, "version": version_str})
-            resp.raise_for_status()
-        except Exception:
-            util.show_error_box("Error", "Failed to upload error report.")
+
+        # Run this on a thread so the UI doesn't block (request takes a while because the bot needs to connect to Discord)
+        def do_error_request(url, json):
+            try:
+                resp = requests.post(url, json=json)
+                resp.raise_for_status()
+                util.show_info_box( "Success", "Error report successfully uploaded." )
+            except Exception:
+                util.show_error_box("Error", "Failed to upload error report.")
+
+        logger.debug("Uploading error report")
+        version_str = version.VERSION
+        if util.is_script:
+            version_str += ".script"
+        thread = threading.Thread(target=do_error_request, args = ( "https://umalauncher.uc.r.appspot.com/api/v1/umalauncher/error", {"traceback": traceback_str, "user_id": user_id, "version": version_str} ) )
+        thread.start()
+
 
 class AboutDialog(UmaMainDialog):
     def init_ui(self, settings, *args, **kwargs):
