@@ -366,7 +366,8 @@ class CarrotJuicer:
 
 
             # Gametora
-            if 'chara_info' in data:
+            # limited_shop_info check is for edge case where chara_info is present when returning to home after training
+            if 'chara_info' in data and not 'limited_shop_info' in data:
                 # Inside training run.
 
                 training_id = ""
@@ -791,6 +792,7 @@ class CarrotJuicer:
                         message = self.sock.recv(self.MAX_BUFFER_SIZE)
                         logger.debug(f"Received {len(message)} bytes of data")
                     except Exception as e:
+                        #TODO: kill the socket in a "good" way that doesn't throw an exception here
                         logger.error(f"Socket interrupted: {e}\n{traceback.format_exc()}")
                         continue
                     if message == b'':
