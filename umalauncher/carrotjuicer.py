@@ -268,7 +268,7 @@ class CarrotJuicer:
         if self.threader.settings["save_packets"]:
             logger.debug("Response:")
             logger.debug(json.dumps(data))
-            self.to_json(data, "packet_in_" + str(datetime.now()) +".json")
+            self.to_json(data, str(datetime.now()).replace(":", "-") + "_packet_in_.json")
 
         try:
             if 'data' not in data:
@@ -515,7 +515,7 @@ class CarrotJuicer:
         if self.threader.settings["save_packets"]:
             logger.debug("Request:")
             logger.debug(json.dumps(data))
-            self.to_json(data, "packet_out" + str(datetime.now()) + ".json")
+            self.to_json(data, str(datetime.now()).replace(":", "-") + "_packet_out.json")
 
         self.previous_request = data
 
