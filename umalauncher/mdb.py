@@ -7,7 +7,26 @@ import util
 import constants
 import gui
 
-DB_PATH = os.path.expandvars("%userprofile%\\appdata\\locallow\\Cygames\\Umamusume\\master\\master.mdb") if 'IS_UL_GLOBAL' in os.environ else os.path.expandvars("%userprofile%\\appdata\\locallow\\Cygames\\umamusume\\master\\master.mdb")
+DB_PATH = None
+def get_db_path():
+    global DB_PATH
+    if DB_PATH:
+        return DB_PATH
+    if 'IS_UL_GLOBAL' in os.environ:
+        DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\Umamusume\\master\\master.mdb")
+    else:
+        DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb")
+        if not os.path.exists(DB_PATH):
+            logger.debug( f"Could not find mdb at path: {DB_PATH}, trying game install directory")
+            DB_PATH = os.path.join( util.get_game_folder(), "umamusume_Data\\Persistent\\master\\master.mdb")
+            if not os.path.exists(DB_PATH):
+                logger.error(f"Could not find mdb at game install path: {DB_PATH}")
+                util.show_error_box_no_report("Error",f"Could not find to the game database file.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
+                if gui.THREADER:
+                    gui.THREADER.stop()
+    logger.debug( f"Using mdb path: {DB_PATH}")
+    return DB_PATH
+
 
 def update_mdb_cache():
     logger.info("Reloading cached dicts.")
@@ -18,7 +37,7 @@ def update_mdb_cache():
 class Connection():
     def __init__(self):
         try:
-            self.conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+            self.conn = sqlite3.connect(f"file:{get_db_path()}?mode=ro", uri=True)
         except sqlite3.OperationalError:
             util.show_error_box_no_report("Connection Error", "Could not connect to the game database.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
             if gui.THREADER:
