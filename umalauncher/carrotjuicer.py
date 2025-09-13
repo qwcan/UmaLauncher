@@ -474,7 +474,7 @@ class CarrotJuicer():
 
             if 'single_mode_finish_request_common' in data:
                 if 'is_force_delete' in data['single_mode_finish_request_common']:
-                    self.close_browser()
+                    self.end_training()
                     return
             if 'is_force_delete' in data:
                 # Packet is a request to delete a training
