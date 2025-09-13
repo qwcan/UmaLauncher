@@ -132,6 +132,9 @@ def get_event_titles(story_id, card_id):
     
     event_titles = [event_title for event_title in event_titles if event_title]
 
+    # Replace the line breaks with spaces
+    event_titles = [event_title.replace("\\n", " ") for event_title in event_titles]
+
     if not event_titles:
         event_titles = ["NO EVENT TITLE"]
         logger.warning(f"Event title not found for story_id: {story_id}")  # TODO: Fix stories that aren't found.
