@@ -376,7 +376,7 @@ class TrainingAnalyzer():
                     skill_pt = self.action_list[-1].skill_pt,
                     energy = self.action_list[-1].energy,
                     motivation = this_horse_data['motivation'],
-                    fans = this_horse_data['fan_count'],
+                    fans = this_horse_data['fan_count'] if 'fan_count' in this_horse_data else -1,
                     skill = {tuple(item.values()) for item in this_horse_data['skill_array']},
                     skillhint = self.action_list[-1].skillhint,
                     status = self.action_list[-1].status

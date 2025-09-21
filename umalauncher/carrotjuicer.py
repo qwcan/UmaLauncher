@@ -475,7 +475,7 @@ class CarrotJuicer:
                     event_element = self.determine_event_element(event_titles)
 
                     if not event_element:
-                        logger.debug(f"Could not find event on GT page: {event_data['story_id']} : {event_titles}")
+                        logger.info(f"Could not find event on GT page: {event_data['story_id']} : {event_titles}")
                     self.browser.execute_script("""
                         if (arguments[0]) {
                             arguments[0].click();
