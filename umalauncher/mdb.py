@@ -49,7 +49,10 @@ def update_mdb_cache():
 class Connection():
     def __init__(self):
         try:
-            self.conn = sqlite3.connect(f"file:{get_db_path()}?mode=ro", uri=True)
+            db_path = get_db_path()
+            if db_path is None:
+                raise sqlite3.OperationalError("Database path could not be determined.")
+            self.conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         except sqlite3.OperationalError:
             util.show_error_box_no_report("Connection Error", "Could not connect to the game database.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
             if gui.THREADER:
