@@ -160,8 +160,8 @@ class WindowMover():
         self.prev_auto_resize = self.threader.settings["lock_game_window"]
     
     def try_maximize(self):
-        if 'IS_UL_GLOBAL' in os.environ:
-            logger.info('Not auto maximizing (in global mode)')
+        if 'IS_UL_GLOBAL' in os.environ or 'IS_JP_STEAM' in os.environ:
+            logger.info('Not auto maximizing (in global or jp steam mode)')
             return
         if self.window:
             new_pos, is_portrait = self.window.calc_max_and_center_pos()
@@ -202,8 +202,8 @@ class WindowMover():
 
             auto_resize = self.threader.settings["lock_game_window"]
 
-            if auto_resize and 'IS_UL_GLOBAL' in os.environ:
-                logger.info('Disabling auto resize (in global mode)')
+            if auto_resize and 'IS_UL_GLOBAL'or 'IS_JP_STEAM' in os.environ in os.environ:
+                logger.info('Disabling auto resize (in global or jp steam mode)')
                 self.threader.settings["lock_game_window"] = False
                 auto_resize = False
 
