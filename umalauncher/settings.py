@@ -351,6 +351,10 @@ class DefaultSettings(se.NewSettings):
         _settings.get("hide_carrotjuicer").hidden=True
 
 
+    # Hide broken settings
+    if 'IS_UL_GLOBAL' in os.environ or 'IS_JP_STEAM' in os.environ:
+        _settings.get("lock_game_window").hidden=True
+
 
 class SettingsHandler():
     settings_file = "umasettings.json"
