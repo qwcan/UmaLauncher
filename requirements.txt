@@ -19,3 +19,4 @@ requests~=2.32.4
 selenium~=4.34.2
 SteamPathFinder==0.0.5
 Werkzeug~=3.1.3
+vdf==3.4
