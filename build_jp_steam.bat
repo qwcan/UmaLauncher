@@ -1,4 +1,4 @@
 cd ./umalauncher
 python create_version.py
-pyinstaller threader.spec
+pyinstaller threader_jp_steam.spec
 cd ..
