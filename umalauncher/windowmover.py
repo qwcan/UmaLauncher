@@ -202,7 +202,7 @@ class WindowMover():
 
             auto_resize = self.threader.settings["lock_game_window"]
 
-            if auto_resize and 'IS_UL_GLOBAL'or 'IS_JP_STEAM' in os.environ in os.environ:
+            if auto_resize and ('IS_UL_GLOBAL' in os.environ or 'IS_JP_STEAM' in os.environ):
                 logger.info('Disabling auto resize (in global or jp steam mode)')
                 self.threader.settings["lock_game_window"] = False
                 auto_resize = False
