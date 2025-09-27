@@ -1,16 +1,14 @@
 # Uma Launcher
-Software that enhances the Uma Musume (Japanese DMM Version) experience.
-
-## NOTE: *Uma Launcher only works with the Japanese DMM version of Uma Musume! The Japanese and Global Steam releases are not currently supported!*
+Software that enhances the Uma Musume experience.
 
 [Frequently Asked Questions](FAQ.md)
 
 For questions and feedback, join the Discord server:
 
-[![Uma Launcher Discord server](https://discordapp.com/api/guilds/1089576859349569646/widget.png?style=banner2)](https://discord.gg/wvGHW65C6A)
+[![Uma Launcher Discord server](https://discordapp.com/api/guilds/1416044589877559497/widget.png?style=banner2)](https://discord.gg/wvGHW65C6A)
 
 ## Requirements (Optional but recommended)
-### NOTE: CarrotJuicer is no longer maintained and the version available on GitHub does not work with the current Japanese DMM Version of Uma Musume. 
+### NOTE: CarrotJuicer is no longer maintained and the version available on GitHub does not work with the current Japanese Version of Uma Musume. 
 <details>
   <summary>(OBSOLETE) CarrotJuicer</summary>
   
