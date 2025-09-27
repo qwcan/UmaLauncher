@@ -268,7 +268,7 @@ class CarrotJuicer:
         if self.threader.settings["save_packets"]:
             logger.debug("Response:")
             logger.debug(json.dumps(data))
-            self.to_json(data, "packet_in_" + str(datetime.now()) +".json")
+            self.to_json(data, str(datetime.now()).replace(":", "-") + "_packet_in_.json")
 
         try:
             if 'data' not in data:
@@ -475,7 +475,7 @@ class CarrotJuicer:
                     event_element = self.determine_event_element(event_titles)
 
                     if not event_element:
-                        logger.debug(f"Could not find event on GT page: {event_data['story_id']} : {event_titles}")
+                        logger.info(f"Could not find event on GT page: {event_data['story_id']} : {event_titles}")
                     self.browser.execute_script("""
                         if (arguments[0]) {
                             arguments[0].click();
@@ -515,7 +515,7 @@ class CarrotJuicer:
         if self.threader.settings["save_packets"]:
             logger.debug("Request:")
             logger.debug(json.dumps(data))
-            self.to_json(data, "packet_out" + str(datetime.now()) + ".json")
+            self.to_json(data, str(datetime.now()).replace(":", "-") + "_packet_out.json")
 
         self.previous_request = data
 

@@ -1,2 +1,2 @@
-./build_global.bat
-./build_jp.bat
+call build_global.bat
+call build_jp.bat
