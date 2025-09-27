@@ -4,7 +4,8 @@ import base64
 import io
 import ctypes
 import win32event
-from SteamPathFinder import get_app_path, get_steam_path, get_game_path
+import winreg
+import vdf
 from win32com.shell.shell import ShellExecuteEx
 from win32com.shell import shellcon
 import win32con
@@ -155,27 +156,55 @@ def do_get_request(url, error_title=None, error_message=None, ignore_timeout=Fal
             last_failed_request = time.perf_counter()
         return None
 
+def _find_steam_game_path(app_id):
+    steam_path = ""
+    try:
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Valve\Steam")
+        steam_path = winreg.QueryValueEx(key, "InstallPath")[0]
+        winreg.CloseKey(key)
+    except FileNotFoundError:
+        logger.error("Could not find Steam installation from registry.")
+        return None
+
+    if not steam_path or not os.path.exists(steam_path):
+        logger.error(f"Steam path from registry does not exist: {steam_path}")
+        return None
+
+    library_folders = [steam_path]
+    library_vdf_path = os.path.join(steam_path, "steamapps", "libraryfolders.vdf")
+    
+    if os.path.exists(library_vdf_path):
+        with open(library_vdf_path, 'r', encoding='utf-8') as f:
+            library_data = vdf.load(f)
+            for key, value in library_data.get('libraryfolders', {}).items():
+                if isinstance(value, dict) and 'path' in value:
+                    library_folders.append(value['path'])
+
+    app_manifest_file = f"appmanifest_{app_id}.acf"
+    for library in library_folders:
+        manifest_path = os.path.join(library, "steamapps", app_manifest_file)
+        if os.path.exists(manifest_path):
+            with open(manifest_path, 'r', encoding='utf-8') as f:
+                manifest_data = vdf.load(f)
+                install_dir = manifest_data.get('AppState', {}).get('installdir')
+                if install_dir:
+                    return os.path.join(library, "steamapps", "common", install_dir)
+    
+    logger.error(f"Could not find game with App ID {app_id} in any Steam library.")
+    return None
 
 def get_game_folder():
     game_data = None
     try:
+        app_id = None
         if 'IS_JP_STEAM' in os.environ:
             app_id = "3564400"
-            try:
-                return get_app_path(app_id)
-            except FileNotFoundError as e:
-                logger.error( "Could not locate Steam JP game directory!" )
-                logger.error(traceback.format_exc())
-                return None
         elif 'IS_UL_GLOBAL' in os.environ:
             app_id = "3224770"
-            try:
-                return get_app_path(app_id)
-            except FileNotFoundError as e:
-                logger.error( "Could not locate Steam Global game directory!" )
-                logger.error(traceback.format_exc())
-                return None
-        else:
+
+        if app_id:
+            return _find_steam_game_path(app_id)
+        else: # DMM version
             with open(os.path.expandvars("%AppData%\\dmmgameplayer5\\dmmgame.cnf"), "r", encoding='utf-8') as f:
                 game_data = json.loads(f.read())
     except OSError as e:
