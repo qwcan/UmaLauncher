@@ -21,13 +21,19 @@ def get_db_path():
             DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb")
         if not os.path.exists(DB_PATH):
             logger.debug( f"Could not find mdb at path: {DB_PATH}, trying game install directory")
+            game_install_path = util.get_game_folder()
+            if game_install_path is None:
+                logger.error(f"Could not game install path")
+                util.show_error_box_no_report("Error",f"Could not find the game install path.<br>Uma Launcher will now close.")
+                if gui.THREADER:
+                    gui.THREADER.stop()
             if 'IS_JP_STEAM' in os.environ:
-                DB_PATH = os.path.join( util.get_game_folder(), "UmamusumePrettyDerby_Jpn_Data\\Persistent\\master\\master.mdb")
+                DB_PATH = os.path.join( game_install_path, "UmamusumePrettyDerby_Jpn_Data\\Persistent\\master\\master.mdb")
             else:
-                DB_PATH = os.path.join( util.get_game_folder(), "umamusume_Data\\Persistent\\master\\master.mdb")
+                DB_PATH = os.path.join( game_install_path, "umamusume_Data\\Persistent\\master\\master.mdb")
             if not os.path.exists(DB_PATH):
                 logger.error(f"Could not find mdb at game install path: {DB_PATH}")
-                util.show_error_box_no_report("Error",f"Could not find to the game database file.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
+                util.show_error_box_no_report("Error",f"Could not find the game database file.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
                 if gui.THREADER:
                     gui.THREADER.stop()
     logger.debug( f"Using mdb path: {DB_PATH}")
