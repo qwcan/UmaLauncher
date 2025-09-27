@@ -21,7 +21,7 @@ def generate():
     )
     # Steam JP release
     pyinstaller_versionfile.create_versionfile(
-        output_file="version_steam_jp.rc",
+        output_file="version_jp_steam.rc",
         version=version.VERSION,
         file_description="Uma Launcher (Steam)",
         internal_name="Uma Launcher (Steam)",
