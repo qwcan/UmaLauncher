@@ -163,7 +163,12 @@ def get_game_folder():
             steam_path = get_steam_path()
             app_id = "3564400"
             game_name = "ウマ娘 プリティーダービー"
-            return get_game_path(steam_path, app_id, game_name)
+            try:
+                return get_game_path(steam_path, app_id, game_name)
+            except FileNotFoundError as e:
+                logger.error( "Could not locate game directory!")
+                logger.error(traceback.format_exc())
+                return None
         else:
             with open(os.path.expandvars("%AppData%\\dmmgameplayer5\\dmmgame.cnf"), "r", encoding='utf-8') as f:
                 game_data = json.loads(f.read())
