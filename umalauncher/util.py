@@ -162,7 +162,7 @@ def get_game_folder():
         if 'IS_JP_STEAM' in os.environ:
             steam_path = get_steam_path()
             app_id = "3564400"
-            game_name = "ウマ娘 プリティーダービー"
+            game_name = "UmamusumePrettyDerby_Jpn"
             try:
                 return get_game_path(steam_path, app_id, game_name)
             except FileNotFoundError as e:
