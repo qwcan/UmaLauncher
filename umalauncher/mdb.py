@@ -15,13 +15,25 @@ def get_db_path():
     if 'IS_UL_GLOBAL' in os.environ:
         DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\Umamusume\\master\\master.mdb")
     else:
-        DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb")
+        if 'IS_JP_STEAM' in os.environ:
+            DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\UmamusumePrettyDerby_Jpn\\master\\master.mdb")
+        else:
+            DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb")
         if not os.path.exists(DB_PATH):
             logger.debug( f"Could not find mdb at path: {DB_PATH}, trying game install directory")
-            DB_PATH = os.path.join( util.get_game_folder(), "umamusume_Data\\Persistent\\master\\master.mdb")
+            game_install_path = util.get_game_folder()
+            if game_install_path is None:
+                logger.error(f"Could not game install path")
+                util.show_error_box_no_report("Error",f"Could not find the game install path.<br>Uma Launcher will now close.")
+                if gui.THREADER:
+                    gui.THREADER.stop()
+            if 'IS_JP_STEAM' in os.environ:
+                DB_PATH = os.path.join( game_install_path, "UmamusumePrettyDerby_Jpn_Data\\Persistent\\master\\master.mdb")
+            else:
+                DB_PATH = os.path.join( game_install_path, "umamusume_Data\\Persistent\\master\\master.mdb")
             if not os.path.exists(DB_PATH):
                 logger.error(f"Could not find mdb at game install path: {DB_PATH}")
-                util.show_error_box_no_report("Error",f"Could not find to the game database file.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
+                util.show_error_box_no_report("Error",f"Could not find the game database file.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
                 if gui.THREADER:
                     gui.THREADER.stop()
     logger.debug( f"Using mdb path: {DB_PATH}")
@@ -37,7 +49,10 @@ def update_mdb_cache():
 class Connection():
     def __init__(self):
         try:
-            self.conn = sqlite3.connect(f"file:{get_db_path()}?mode=ro", uri=True)
+            db_path = get_db_path()
+            if db_path is None:
+                raise sqlite3.OperationalError("Database path could not be determined.")
+            self.conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         except sqlite3.OperationalError:
             util.show_error_box_no_report("Connection Error", "Could not connect to the game database.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
             if gui.THREADER:

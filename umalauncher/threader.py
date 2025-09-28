@@ -55,6 +55,8 @@ class Threader():
         self.settings = settings.SettingsHandler(self)
         if 'IS_UL_GLOBAL' in os.environ:
             logger.info( ":pokkeAAAAA:")
+        elif 'IS_JP_STEAM' in os.environ:
+            logger.info( "Running JP Steam version")
         
         # Ensure only a single instance is running.
         self.check_single_instance()

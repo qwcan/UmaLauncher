@@ -4,6 +4,7 @@ import base64
 import io
 import ctypes
 import win32event
+from SteamPathFinder import get_app_path, get_steam_path, get_game_path
 from win32com.shell.shell import ShellExecuteEx
 from win32com.shell import shellcon
 import win32con
@@ -28,6 +29,8 @@ is_debug = is_script
 
 if 'IS_UL_GLOBAL' in os.environ:
     appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher-Global\\")
+elif 'IS_JP_STEAM' in os.environ:
+    appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher-JP-Steam\\")
 else:
     appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher\\")
 
@@ -156,10 +159,21 @@ def do_get_request(url, error_title=None, error_message=None, ignore_timeout=Fal
 def get_game_folder():
     game_data = None
     try:
-        with open(os.path.expandvars("%AppData%\\dmmgameplayer5\\dmmgame.cnf"), "r", encoding='utf-8') as f:
-            game_data = json.loads(f.read())
+        if 'IS_JP_STEAM' in os.environ:
+            steam_path = get_steam_path()
+            app_id = "3564400"
+            game_name = "UmamusumePrettyDerby_Jpn"
+            try:
+                return get_game_path(steam_path, app_id, game_name)
+            except FileNotFoundError as e:
+                logger.error( "Could not locate steam JP game directory!" )
+                logger.error(traceback.format_exc())
+                return None
+        else:
+            with open(os.path.expandvars("%AppData%\\dmmgameplayer5\\dmmgame.cnf"), "r", encoding='utf-8') as f:
+                game_data = json.loads(f.read())
     except OSError as e:
-        logger.error( "Could not locate game directory!")
+        logger.error( "Could not locate DMM game directory!")
         logger.error(traceback.format_exc())
         return None
 
@@ -342,6 +356,9 @@ def get_game_handle():
 
 def get_game_handle_global():
     return get_window_handle("Umamusume", type=EXACT)
+
+def get_game_handle_jp_steam():
+    return get_window_handle("UmamusumePrettyDerby_Jpn", type=EXACT)
 
 
 def get_position_rgb(image: Image.Image, position: tuple[float,float]) -> tuple[int,int,int]:

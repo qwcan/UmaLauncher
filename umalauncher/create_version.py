@@ -19,6 +19,15 @@ def generate():
         original_filename="UmaLauncher (Global).exe",
         product_name="Uma Launcher (Global)"
     )
+    # Steam JP release
+    pyinstaller_versionfile.create_versionfile(
+        output_file="version_jp_steam.rc",
+        version=version.VERSION,
+        file_description="Uma Launcher (Steam)",
+        internal_name="Uma Launcher (Steam)",
+        original_filename="UmaLauncher (Steam).exe",
+        product_name="Uma Launcher (Steam)"
+    )
 
 if __name__ == "__main__":
     generate()

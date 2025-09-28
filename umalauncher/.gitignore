@@ -16,6 +16,8 @@ sandbox.py
 *.log.zip
 packet.json
 version.rc
+version_global.rc
+version_jp_steam.rc
 *.json
 *.exe
 *.exe_
