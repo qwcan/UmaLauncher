@@ -5,8 +5,8 @@ import glob
 import traceback
 import math
 import json
-from inspect import trace
 from datetime import datetime
+from inspect import trace
 
 import msgpack
 from loguru import logger
@@ -268,7 +268,7 @@ class CarrotJuicer:
         if self.threader.settings["save_packets"]:
             logger.debug("Response:")
             logger.debug(json.dumps(data))
-            self.to_json(data, str(datetime.now()).replace(":", "-") + "_packet_in_.json")
+            self.to_json(data, str(datetime.now()).replace(":", "-") + "_packet_in.json")
 
         try:
             if 'data' not in data:
@@ -298,7 +298,7 @@ class CarrotJuicer:
                 gametora_close_ad_banner(self.browser)
 
             # Run ended
-            if 'single_mode_factor_select_common' in data:
+            if 'single_mode_factor_select_common' in data or 'single_mode_finish_common' in data:
                 self.end_training()
                 return
 
@@ -523,6 +523,10 @@ class CarrotJuicer:
             if 'attestation_type' in data:
                 mdb.update_mdb_cache()
 
+            if 'single_mode_finish_request_common' in data:
+                if 'is_force_delete' in data['single_mode_finish_request_common']:
+                    self.end_training()
+                    return
             if 'is_force_delete' in data:
                 # Packet is a request to delete a training
                 self.end_training()
