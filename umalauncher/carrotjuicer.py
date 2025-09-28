@@ -1041,6 +1041,8 @@ def setup_helper_page(browser: horsium.BrowserWindow):
 
     # Enable all cards
     browser.execute_script("""document.querySelector("[class^='filters_settings_button_']").click()""")
+    while not browser.execute_script("""return document.getElementById("allAtOnceCheckbox");"""):
+        time.sleep(0.125)
     all_cards_enabled = browser.execute_script("""return document.getElementById("allAtOnceCheckbox").checked;""")
     if not all_cards_enabled:
         browser.execute_script("""document.getElementById("allAtOnceCheckbox").click()""")
