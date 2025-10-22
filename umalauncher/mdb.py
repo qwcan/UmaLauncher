@@ -13,10 +13,18 @@ def get_db_path():
     DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb")
     if not os.path.exists(DB_PATH):
         logger.debug( f"Could not find mdb at path: {DB_PATH}, trying game install directory")
+        game_path = util.get_game_folder()
+        if game_path is None:
+            logger.error(f"Could not find mdb at path: {DB_PATH}, and could not find game install directory.")
+            util.show_error_box("Uma Launcher: No game install path found.",
+                                f"Could not the game database file at path: {DB_PATH}, and could not find game install directory. Ensure you have the game installed via DMM.")
+            if gui.THREADER:
+                gui.THREADER.stop()
+            return DB_PATH
         DB_PATH = os.path.join( util.get_game_folder(), "umamusume_Data\\Persistent\\master\\master.mdb")
         if not os.path.exists(DB_PATH):
             logger.error(f"Could not find mdb at game install path: {DB_PATH}")
-            util.show_error_box_no_report("Error",f"Could not find to the game database file.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
+            util.show_error_box_no_report("Error",f"Could not find the game database file.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
             if gui.THREADER:
                 gui.THREADER.stop()
     logger.debug( f"Using mdb path: {DB_PATH}")
