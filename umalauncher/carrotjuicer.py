@@ -885,10 +885,19 @@ def setup_helper_page(browser: horsium.BrowserWindow):
 
     # Enable all cards
     browser.execute_script("""document.querySelector("[class^='filters_settings_button_']").click()""")
-    all_cards_enabled = browser.execute_script("""return document.getElementById("allAtOnceCheckbox").checked;""")
-    if not all_cards_enabled:
-        browser.execute_script("""document.getElementById("allAtOnceCheckbox").click()""")
-    browser.execute_script("""document.querySelector("[class^='filters_confirm_button_']").click()""")
+    #TODO: The webdriver code should probably be refactored to handle waits better
+    timeout = 3
+    while not browser.execute_script("""return document.getElementById("allAtOnceCheckbox");"""):
+        time.sleep(0.125)
+        timeout -= 0.125
+        if timeout <= 0:
+            logger.error("Timeout waiting for allAtOnceCheckbox to appear.")
+            break
+    if timeout > 0:
+        all_cards_enabled = browser.execute_script("""return document.getElementById("allAtOnceCheckbox").checked;""")
+        if not all_cards_enabled:
+            browser.execute_script("""document.getElementById("allAtOnceCheckbox").click()""")
+        browser.execute_script("""document.querySelector("[class^='filters_confirm_button_']").click()""")
 
     gametora_remove_cookies_banner(browser)
     gametora_close_ad_banner( browser )
