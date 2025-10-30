@@ -228,11 +228,41 @@ class HelperTable():
                     row.disabled = arc_beginning_or_overseas
                     break
 
+        # Onsen
+        if 'onsen_data_set' in data:
+            for command in data['onsen_data_set']['command_info_array']:
+                all_commands[command['command_id']]['dig_info_array'] = command['dig_info_array']
+
         # Support Dict
         eval_dict = {
             eval_data['training_partner_id']: TrainingPartner(eval_data['training_partner_id'], eval_data['evaluation'], data['chara_info'])
             for eval_data in data['chara_info']['evaluation_info_array']
         }
+
+        onsen_points_gain = {}
+        # Onsen
+        if 'onsen_data_set' in data:
+            onsen_data = data['onsen_data_set']
+            for command_data in onsen_data.get('command_info_array', []):
+                command_id = command_data['command_id']
+                command_key = constants.COMMAND_ID_TO_KEY.get(command_id, None)
+                if command_key and command_key in command_info and 'dig_info_array' in command_data:
+                    dig_info_array = copy.deepcopy(command_data['dig_info_array'])
+                    command_info[constants.COMMAND_ID_TO_KEY[command_id]]['dig_info_array'] = dig_info_array
+
+            # Make new command for PR Activities
+            if 'assistant_command_info' in onsen_data and 'is_enable' in onsen_data['assistant_command_info'] and onsen_data['assistant_command_info']['is_enable'] == 1:
+                all_commands["pr_activities"] = {
+                    'command_id': "pr_activities",
+                    'params_inc_dec_info_array': onsen_data['assistant_command_info'].get(
+                        'params_inc_dec_info_array', []) + \
+                                                 onsen_data['assistant_command_info'].get(
+                                                     'bonus_params_inc_dec_info_array', []),
+                    "dig_info_array": onsen_data['assistant_command_info'].get(
+                                                     'dig_info_array', [])
+                }
+
+
 
         # I'm lazy and don't want to refactor any of this, so I'm just defining these here
         uaf_sport_rank = {}
@@ -255,6 +285,7 @@ class HelperTable():
             gained_energy = 0
             rainbow_count = 0
             arc_aptitude_gain = 0
+            onsen_points_gain = 0
 
             for param in command.get('params_inc_dec_info_array', []):
                 if param['target_type'] < 6:
@@ -465,6 +496,11 @@ class HelperTable():
                 gain_info_list.sort(key=lambda x: x[0] % 10)
                 uaf_sport_gain = {command_id: gain_rank for command_id, gain_rank in gain_info_list}
 
+            # Onsen
+            if 'onsen_data_set' in data:
+                if 'dig_info_array' in command:
+                    onsen_points_gain += sum(dig_info['dig_value'] for dig_info in command['dig_info_array'])
+
             command_info[command['command_id']] = {
                 'scenario_id': scenario_id,
                 'current_stats': current_stats,
@@ -484,6 +520,7 @@ class HelperTable():
                 'arc_gauge_gain': arc_gauge_gain,
                 'arc_aptitude_gain': arc_aptitude_gain,
                 'uaf_sport_gain': uaf_sport_gain,
+                'onsen_points_gain': onsen_points_gain,
             }
 
         # Simplify everything down to a dict with only the keys we care about.

@@ -925,6 +925,22 @@ class DYISettings(se.NewSettings):
         ),
     }
 
+class OnsenSettings(se.NewSettings):
+    _settings = {
+        "highlight_max": se.Setting(
+            "Highlight max",
+            "Highlights the facility with the greatest point gain.",
+            True,
+            se.SettingType.BOOL
+        ),
+        "highlight_max_color": se.Setting(
+            "Highlight max color",
+            "The color to use to highlight the facility with the greatest point gain.",
+            "#90EE90",
+            se.SettingType.COLOR
+        ),
+    }
+
 class GFFVegetablesRow(hte.Row):
     long_name = "GFF Vegetable Gain"
     short_name = "Veggies"
@@ -1072,7 +1088,7 @@ class RMUResearchDistributionRow(hte.Row):
 class DYIPointsDistributionRow(hte.Row):
     long_name = "Design Your Island points distribution"
     short_name = "Points <br>Distribution"
-    description = "[Scenario-specific] Shows the distribution of  points gained on each facility. Hidden in other scenarios."
+    description = "[Scenario-specific] Shows the distribution of points gained on each facility. Hidden in other scenarios."
 
 
     def __init__(self):
@@ -1113,6 +1129,48 @@ class DYIPointsDistributionRow(hte.Row):
         return super().to_tr(command_info)
 
 
+class OnsenPointsDistributionRow(hte.Row):
+    long_name = "Yukoma Hot Springs points distribution"
+    short_name = "Points <br>Distribution"
+    description = "[Scenario-specific] Shows the distribution of points gained on each facility. Hidden in other scenarios."
+
+
+    def __init__(self):
+        super().__init__()
+        self.settings = OnsenSettings()
+
+    def _generate_cells(self, game_state) -> list[hte.Cell]:
+        if list(game_state.values())[0]['scenario_id'] != 12:
+            return []
+
+        cells = [hte.Cell(self.short_name, title=self.description)]
+
+        point_sums = {}
+
+        for command_key, command_data in game_state.items():
+            point_sum = 0
+            if 'onsen_points_gain' in command_data :
+                point_sum = command_data['onsen_points_gain']
+            point_sums[command_key] = point_sum
+
+        max_points = max(point_sums.values())
+
+        for command_key, points in point_sums.items():
+            if self.settings.highlight_max.value and points == max_points and max_points > 0:
+                cells.append(hte.Cell(points, bold=True, color=self.settings.highlight_max_color.value))
+            else:
+                cells.append(hte.Cell(points))
+
+        return cells
+
+    def to_tr(self, command_info):
+        if list(command_info.values())[0]['scenario_id'] != 12:
+            return ""
+
+        return super().to_tr(command_info)
+
+
+
 class RowTypes(Enum):
     CURRENT_STATS = CurrentStatsRow
     GAINED_STATS = GainedStatsRow
@@ -1138,6 +1196,7 @@ class RowTypes(Enum):
     RMU_RESEARCH = RMUTotalResearchLevelRow
     RMU_RESEARCH_DIST = RMUResearchDistributionRow
     DYI_POINTS_DIST = DYIPointsDistributionRow
+    ONSEN_POINTS_DIST = OnsenPointsDistributionRow
 
 
 class DefaultPreset(hte.Preset):
