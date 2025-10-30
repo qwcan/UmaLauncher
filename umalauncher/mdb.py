@@ -23,8 +23,8 @@ def get_db_path():
             logger.debug( f"Could not find mdb at path: {DB_PATH}, trying game install directory")
             game_install_path = util.get_game_folder()
             if game_install_path is None:
-                logger.error(f"Could not game install path")
-                util.show_error_box_no_report("Error",f"Could not find the game install path.<br>Uma Launcher will now close.")
+                logger.error(f"Could not find game install path")
+                util.show_error_box_no_report("Error",f"Could not the game database file at path: {DB_PATH}, and could not find game install directory.<br>Uma Launcher will now close.")
                 if gui.THREADER:
                     gui.THREADER.stop()
             if 'IS_JP_STEAM' in os.environ:
