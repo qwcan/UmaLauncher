@@ -5,7 +5,7 @@ Software that enhances the Uma Musume experience.
 
 For questions and feedback, join the Discord server:
 
-[![Uma Launcher Discord server](https://discordapp.com/api/guilds/1416044589877559497/widget.png?style=banner2)](https://discord.gg/wvGHW65C6A)
+[![Uma Launcher Discord server](https://discordapp.com/api/guilds/1416044589877559497/widget.png?style=banner2)](https://discord.gg/xd4EbvKBaf)
 
 ## Requirements (Optional but recommended)
 ### NOTE: The original version of CarrotJuicer available on GitHub does not work with the current Japanese Version of Uma Musume.<br> Either use one of the updated forks or get the dll from the Hachimi Discord server.
