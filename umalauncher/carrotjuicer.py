@@ -250,12 +250,7 @@ class CarrotJuicer():
                 self.browser.execute_script(
                     # Janky way to get open event popups
                     """
-                    document.querySelectorAll("[class^='sc-'][aria-expanded=true]").forEach(e => {
-                        if(e.tagName == "BUTTON")
-                        {
-                            e.click();
-                        }
-                    });
+                    document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-'][aria-expanded=true]").forEach(e => { e.click()});
                     """
                 )
                 gametora_close_ad_banner(self.browser)
@@ -636,11 +631,11 @@ class CarrotJuicer():
             # We need to filter by buttons to just exclude the divs containing them
             possible_elements = self.browser.execute_script(
                 """
-                let a = document.querySelectorAll("[class^='sc-']");
+                let a = document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-']");
                 let ele = [];
                 for (let i = 0; i < a.length; i++) {
                     let item = a[i];
-                    if (a[i].tagName == "BUTTON" && item.textContent.includes(arguments[0])) {
+                    if (item.textContent.includes(arguments[0])) {
                         let diff = item.textContent.length - arguments[0].length;
                         ele.push([diff, item, item.textContent]);
                     }
@@ -994,6 +989,22 @@ def gametora_close_ad_banner(browser: horsium.BrowserWindow):
                     if( document.getElementsByClassName("publift-widget-sticky_footer-container")[0] != null ){
                         document.getElementsByClassName("publift-widget-sticky_footer-container")[0].classList.add("closed")
                     }""")
+
+    # Close the top support cards thing, super jank
+    browser.execute_script("""
+                    let a = document.querySelector("[id^='styles_page-main_']");
+                    if( a != null ){
+                        let b = a.children[1]; //First element is top ad
+                        if( b != null )
+                        {
+                            let c = b.children[b.childElementCount - 1]; //Last element is the support cards thing
+                            if( c != null )
+                            {
+                                c.style.display = "none";
+                            }
+                        }
+                    }
+                    """)
 
 
 
