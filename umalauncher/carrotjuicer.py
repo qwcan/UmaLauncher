@@ -1032,9 +1032,12 @@ def setup_helper_page(browser: horsium.BrowserWindow):
     gametora_dark_mode(browser)
 
     # Enable all cards
-    # This is no longer easily accessible :(
     browser.execute_script("""
     var settings = document.querySelector("[class^='filters_settings_button_']");
+    if( settings == null )
+    {
+       settings = document.getElementById("teh-settings-open");
+    }
     if( settings == null )
     {
        settings = Array.from(document.querySelectorAll('div')).find( el => el.textContent === "Settings");
