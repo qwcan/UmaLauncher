@@ -291,8 +291,9 @@ class CarrotJuicer:
             # Close whatever popup is open
             if self.browser and self.browser.alive():
                 self.browser.execute_script(
+                    # Janky way to get open event popups
                     """
-                    document.querySelectorAll("[class^='compatibility_viewer_item_'][aria-expanded=true]").forEach(e => e.click());
+                    document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-'][aria-expanded=true]").forEach(e => { e.click()});
                     """
                 )
                 gametora_close_ad_banner(self.browser)
@@ -677,9 +678,11 @@ class CarrotJuicer:
     def determine_event_element(self, event_titles):
         ranked_elements = []
         for event_title in event_titles:
+            # The class names are mangled with React now :(
+            # We need to filter by buttons to just exclude the divs containing them
             possible_elements = self.browser.execute_script(
                 """
-                let a = document.querySelectorAll("[class^='compatibility_viewer_item_']");
+                let a = document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-']");
                 let ele = [];
                 for (let i = 0; i < a.length; i++) {
                     let item = a[i];
@@ -1148,6 +1151,22 @@ def gametora_close_ad_banner(browser: horsium.BrowserWindow):
                 }, 5 * 1000);
             }
             """)
+
+    # Close the top support cards thing, super jank
+    browser.execute_script("""
+                    let a = document.querySelector("[id^='styles_page-main_']");
+                    if( a != null ){
+                        let b = a.children[1]; //First element is top ad
+                        if( b != null )
+                        {
+                            let c = b.children[b.childElementCount - 1]; //Last element is the support cards thing
+                            if( c != null )
+                            {
+                                c.style.display = "none";
+                            }
+                        }
+                    }
+                    """)
 
 
 
