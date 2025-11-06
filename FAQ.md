@@ -4,7 +4,7 @@ Here's a list of things you may want to know about Uma Launcher. If you have a q
 
 <details>
 <summary><b>What versions of Uma Musume does Uma Launcher support?</b></summary>
-Uma Launcher currently only supports the Japanese DMM version of the Uma Musume. Support for the global Steam release is in progress, and support for the Japanese Steam release might come at a later date.
+Uma Launcher supports the Japanese DMM, Japanese Steam, and Global Steam version of the Uma Musume.
 </details>
 
 <details>
