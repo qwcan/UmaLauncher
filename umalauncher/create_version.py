@@ -16,7 +16,7 @@ def generate():
         version=version.VERSION,
         file_description="Uma Launcher (Global)",
         internal_name="Uma Launcher (Global)",
-        original_filename="UmaLauncher (Global).exe",
+        original_filename="UmaLauncher-Global.exe",
         product_name="Uma Launcher (Global)"
     )
     # Steam JP release
@@ -25,7 +25,7 @@ def generate():
         version=version.VERSION,
         file_description="Uma Launcher (Steam)",
         internal_name="Uma Launcher (Steam)",
-        original_filename="UmaLauncher (Steam).exe",
+        original_filename="UmaLauncher-Steam.exe",
         product_name="Uma Launcher (Steam)"
     )
 
