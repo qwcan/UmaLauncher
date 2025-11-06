@@ -1395,6 +1395,7 @@ class UmaErrorPopup(qtw.QMessageBox):
         version_str = version.VERSION
         if util.is_script:
             version_str += ".script"
+        version_str += " (" + util.get_game_variant_string() + ")"
         thread = threading.Thread(target=do_error_request, args = ( "https://umalauncher.uc.r.appspot.com/api/v1/umalauncher/error", {"traceback": traceback_str, "user_id": user_id, "version": version_str} ) )
         thread.start()
 
