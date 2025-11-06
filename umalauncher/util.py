@@ -175,6 +175,7 @@ def get_game_folder():
     except OSError as e:
         logger.error( "Could not locate DMM game directory!")
         logger.error(traceback.format_exc())
+        show_error_box_no_report("Error", "Could not locate game directory (tried reading %AppData%\\dmmgameplayer5\\dmmgame.cnf).<br> Make sure that you have DMM Game Player installed.")
         return None
 
     if not game_data or not game_data.get('contents'):

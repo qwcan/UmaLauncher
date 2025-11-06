@@ -9,7 +9,8 @@ SCENARIO_DICT = {
     8: "Great Food Festival",
     9: "Run! Mecha Umamusume",
     10: "The Twinkle Legends",
-    11: "Design Your Island"
+    11: "Design Your Island",
+    12: "Yukoma Hot Springs"
 }
 
 MOTIVATION_DICT = {
@@ -100,6 +101,8 @@ COMMAND_ID_TO_KEY = {
     3603: "power",
     3604: "guts",
     3605: "wiz",
+    # Onsen
+    "pr_activities": "pr_activities"
 }
 
 TARGET_TYPE_TO_KEY = {
@@ -267,6 +270,14 @@ RMU_KEY_TO_ORDER = {
 }
 
 DYI_KEY_TO_ORDER = {
+    101: 1,
+    105: 2,
+    102: 3,
+    103: 4,
+    106: 5,
+}
+
+ONSEN_KEY_TO_ORDER = {
     101: 1,
     105: 2,
     102: 3,

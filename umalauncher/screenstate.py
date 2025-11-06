@@ -1,5 +1,6 @@
 import time
 import asyncio
+import traceback
 from enum import Enum
 from io import BytesIO
 import os
@@ -197,8 +198,9 @@ class ScreenStateHandler():
             if util.is_debug:
                 image.save(util.get_relative("screenshot.png"), "PNG")
             return image
-        except Exception:
+        except Exception as e:
             logger.error("Couldn't get screenshot.")
+            logger.error(traceback.format_exc())
             return None
 
     def screenshot_to_clipboard(self):
