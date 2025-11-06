@@ -26,7 +26,7 @@ The global version of Uma Launcher requires CarrotBlender, also available on [th
 </details>
 
 ## Download
-Download the latest version's `UmaLauncher.exe` (JP DMM), `UmaLauncher (Global).exe` (Global Steam), or `UmaLauncher (Steam).exe` (JP Steam).
+Download the latest version's `UmaLauncher.exe` (JP DMM), `UmaLauncher-Global.exe` (Global Steam), or `UmaLauncher-Steam.exe` (JP Steam).
 
 [![Latest release](https://img.shields.io/github/v/release/qwcan/UmaLauncher)](https://github.com/qwcan/UmaLauncher/releases/latest)
 
