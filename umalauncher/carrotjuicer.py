@@ -293,7 +293,7 @@ class CarrotJuicer:
                 self.browser.execute_script(
                     # Janky way to get open event popups
                     """
-                    document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-'][aria-expanded=true]").forEach(e => { e.click()});
+                    document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-'][aria-expanded=true], div[class^='compatibility_result_box_'] button[class^='sc-'][aria-expanded=true]").forEach(e => { e.click()});
                     """
                 )
                 gametora_close_ad_banner(self.browser)
@@ -682,7 +682,7 @@ class CarrotJuicer:
             # We need to filter by buttons to just exclude the divs containing them
             possible_elements = self.browser.execute_script(
                 """
-                let a = document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-']");
+                let a = document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-'], div[class^='compatibility_result_box_'] button[class^='sc-']");
                 let ele = [];
                 for (let i = 0; i < a.length; i++) {
                     let item = a[i];
