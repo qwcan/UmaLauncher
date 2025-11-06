@@ -730,8 +730,7 @@ class CarrotJuicer:
                 ip_address = self.threader.settings["carrotblender_host"]
                 try:
                     self.sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-                    #TODO: CONFIGURATION
-                    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536*3)
+                    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.threader.settings["carrotblender_max_buffer_size"])
                     logger.info(f"Max buffer size: {self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}" )
                     self.sock.bind( (ip_address, port) )
                 except socket.error as message:
@@ -821,19 +820,6 @@ class CarrotJuicer:
                     if msg_type == 0:# Data (full)
                         logger.debug(f"Processing data: {message.hex()}")
                         self.encrypted_data = message
-                        #TODO parse multipart messages
-                        # NEED TO DO THIS OR ELSE EVERYTHING BREAKS
-                        if self.key is not None and self.iv is not None:
-                            pass
-                            #unpacked = unpack(message, self.key, self.iv)
-                            #self.handle_response(unpacked, is_json=True)
-                            #TODO: should these be reset?
-                            #self.key = None
-                            #self.iv = None
-
-                        else:
-                            pass
-                            #logger.warning( f"Ignoring message, key and/or IV is not set!")
                     elif msg_type == 1: # Key
                         logger.debug(f"Processing key: {message.hex()}")
                         self.key = message
@@ -848,14 +834,13 @@ class CarrotJuicer:
                                 logger.debug("Unpacked message:")
                                 logger.debug(unpacked)
                                 self.handle_response(unpacked, is_json=True)
-                                # TODO: should these be reset?
+                                # TODO: we could probably keep the key as it shouldn't change
                                 self.key = None
                                 self.iv = None
                                 self.encrypted_data = None
                             except Exception as e:
                                 logger.error(f"Error decoding and handling message: {e}")
                                 logger.error(traceback.format_exc())
-                                # TODO: should these be reset?
                                 self.key = None
                                 self.iv = None
                                 self.encrypted_data = None
@@ -1047,9 +1032,12 @@ def setup_helper_page(browser: horsium.BrowserWindow):
     gametora_dark_mode(browser)
 
     # Enable all cards
-    # This is no longer easily accessible :(
     browser.execute_script("""
     var settings = document.querySelector("[class^='filters_settings_button_']");
+    if( settings == null )
+    {
+       settings = document.getElementById("teh-settings-open");
+    }
     if( settings == null )
     {
        settings = Array.from(document.querySelectorAll('div')).find( el => el.textContent === "Settings");

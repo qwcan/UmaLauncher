@@ -669,3 +669,11 @@ UPDATE_FUNCS = [
     get_rmu_image_dict,
     get_group_support_id_to_passion_zone_effect_id_dict,
 ]
+
+def get_game_variant_string():
+    if 'IS_UL_GLOBAL' in os.environ:
+        return "Global"
+    elif 'IS_JP_STEAM' in os.environ:
+        return "JP Steam"
+    else:
+        return "DMM"
