@@ -13,7 +13,8 @@ TABLE_HEADERS = {
     "guts": "Guts",
     "wiz": "Wisdom",
     "ss_match": "SS Match",
-    "ticket": "Ticket"
+    "ticket": "Ticket",
+    "pr_activities": "PR Activities",
 }
 
 class Colors(enum.Enum):
