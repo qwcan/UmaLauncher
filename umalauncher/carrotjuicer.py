@@ -884,7 +884,20 @@ def setup_helper_page(browser: horsium.BrowserWindow):
     gametora_dark_mode(browser)
 
     # Enable all cards
-    browser.execute_script("""document.querySelector("[class^='filters_settings_button_']").click()""")
+    # This is no longer easily accessible :(
+    browser.execute_script("""
+    var settings = document.querySelector("[class^='filters_settings_button_']");
+    if( settings == null )
+    {
+       settings = Array.from(document.querySelectorAll('div')).find( el => el.textContent === "Settings");
+       if( settings == null ) return;
+       settings = settings.childNodes[0];
+    }
+    if( settings != null )
+    {
+       settings.click();
+    }
+    """)
     all_cards_enabled = browser.execute_script("""return document.getElementById("allAtOnceCheckbox").checked;""")
     if not all_cards_enabled:
         browser.execute_script("""document.getElementById("allAtOnceCheckbox").click()""")
