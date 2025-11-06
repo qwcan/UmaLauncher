@@ -9,14 +9,14 @@ For questions and feedback, join the Discord server:
 
 ## Requirements (Optional but recommended)
 ### NOTE: The original version of CarrotJuicer available on GitHub does not work with the current Japanese Version of Uma Musume.<br> Either use one of the updated forks or get the dll from the Hachimi Discord server.
-The global version of Uma Launcher requires CarrotBlender, also available on the Hachimi Discord server. The install instructions are the same as CarrotJuicer.
+The global version of Uma Launcher requires CarrotBlender, also available on [the Hachimi Discord server](https://discord.gg/BVEt5FcxEn). The install instructions are the same as CarrotJuicer.
 <details>
   <summary>CarrotJuicer</summary>
   
 - [CarrotJuicer](https://github.com/hayaunderscore/CarrotJuicer) (Not made by me.)
   - CarrotJuicer/CarrotBlender require a build of Hachimi with plugin support, preferably [Hachimi-Edge](https://github.com/kairusds/Hachimi-Edge/releases/latest).<br>
   Use the installer exe to install Hachimi (you may need to restart your computer after installation).<br>
-  See [the Hachimi-Edge website](https://hachimi.noccu.art/) for details.
+  See [the Hachimi-Edge website](https://hachimi.noccu.art/) and the [Discord server](https://discord.gg/BVEt5FcxEn) for details.
   - Download the latest version, preferably from the Hachimi discord server.
   - Copy the .dll file into the `hachimi` folder in the game's install directory.
   - Edit the `config.json` file in that folder to add the dll to the `load_libraries` list.<br>
