@@ -1,28 +1,32 @@
 # Uma Launcher
-Software that enhances the Uma Musume (Japanese DMM Version) experience.
-
-## NOTE: *Uma Launcher only works with the Japanese DMM version of Uma Musume! The Japanese and Global Steam releases are not currently supported!*
+Software that enhances the Uma Musume experience.
 
 [Frequently Asked Questions](FAQ.md)
 
 For questions and feedback, join the Discord server:
 
-[![Uma Launcher Discord server](https://discordapp.com/api/guilds/1089576859349569646/widget.png?style=banner2)](https://discord.gg/wvGHW65C6A)
+[![Uma Launcher Discord server](https://discordapp.com/api/guilds/1416044589877559497/widget.png?style=banner2)](https://discord.gg/xd4EbvKBaf)
 
 ## Requirements (Optional but recommended)
-### NOTE: CarrotJuicer is no longer maintained and the version available on GitHub does not work with the current Japanese DMM Version of Uma Musume. 
+### NOTE: The original version of CarrotJuicer available on GitHub does not work with the current Japanese Version of Uma Musume.<br> Either use one of the updated forks or get the dll from the Hachimi Discord server.
+The global version of Uma Launcher requires CarrotBlender, also available on [the Hachimi Discord server](https://discord.gg/BVEt5FcxEn). The install instructions are the same as CarrotJuicer.
 <details>
-  <summary>(OBSOLETE) CarrotJuicer</summary>
+  <summary>CarrotJuicer</summary>
   
-- [EXNOA-CarrotJuicer](https://github.com/CNA-Bld/EXNOA-CarrotJuicer) (Not made by me.)
-  - Download the latest version's `Umamusume.7z`: [![Latest release](https://img.shields.io/github/v/release/CNA-Bld/EXNOA-CarrotJuicer)](https://github.com/CNA-Bld/EXNOA-CarrotJuicer/releases/latest)
-  - Extract CarrotJuicer's `version.dll` to the game's installation folder.<br>(The same folder where `umamusume.exe` is located.)
+- [CarrotJuicer](https://github.com/hayaunderscore/CarrotJuicer) (Not made by me.)
+  - CarrotJuicer/CarrotBlender require a build of Hachimi with plugin support, preferably [Hachimi-Edge](https://github.com/kairusds/Hachimi-Edge/releases/latest).<br>
+  Use the installer exe to install Hachimi (you may need to restart your computer after installation).<br>
+  See [the Hachimi-Edge website](https://hachimi.noccu.art/) and the [Discord server](https://discord.gg/BVEt5FcxEn) for details.
+  - Download the latest version, preferably from the Hachimi discord server.
+  - Copy the .dll file into the `hachimi` folder in the game's install directory.
+  - Edit the `config.json` file in that folder to add the dll to the `load_libraries` list.<br>
+  For example, if the file is named `carrotjuicer.dll` then the line should be `"load_libraries": ["hachimi\\carrotjuicer.dll"],`
   - While optional, CarrotJuicer allows Uma Launcher to extract information from the network packets the game sends/receives. This information is necessary to determine the current status of the game, and needed for most of the features of Uma Launcher to work.
 
 </details>
 
 ## Download
-Download the latest version's `UmaLauncher.exe`:
+Download the latest version's `UmaLauncher.exe` (JP DMM), `UmaLauncher (Global).exe` (Global Steam), or `UmaLauncher (Steam).exe` (JP Steam).
 
 [![Latest release](https://img.shields.io/github/v/release/qwcan/UmaLauncher)](https://github.com/qwcan/UmaLauncher/releases/latest)
 

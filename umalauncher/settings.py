@@ -1,6 +1,8 @@
 import os
 import json
 import uuid
+from math import trunc
+
 from win32com.shell import shell
 import traceback
 from loguru import logger
@@ -324,6 +326,41 @@ class DefaultSettings(se.NewSettings):
             hidden=True
         ),
     }
+
+    # Enable global-specific config and hide jp-only config
+    if 'IS_UL_GLOBAL' in os.environ:
+        _settings.update({
+            "carrotblender_port": se.Setting(
+                "CarrotBlender Port",
+                "Port to listen on for CarrotBlender.",
+                17229,
+                se.SettingType.INT,
+                max_value=65535
+            ),
+            "carrotblender_host": se.Setting(
+                "CarrotBlender Hostname",
+                "Hostname/IP address to listen on for CarrotBlender. Don't change this unless you know what you're doing.",
+                '127.0.0.1',
+                se.SettingType.STRING,
+                hidden=True
+            ),
+            "carrotblender_max_buffer_size": se.Setting(
+                "CarrotBlender Max Buffer Size",
+                "Buffer size for CarrotBlender (in bytes). Don't change this unless you really know what you're doing.",
+                262144, # TODO this is completely arbitrary
+                se.SettingType.INT,
+                hidden=True,
+                max_value=1048576 # 1MB
+            )
+        })
+        _settings.get("enable_carrotjuicer").name = "Enable CarrotBlender"
+        _settings.get("enable_carrotjuicer").description = "Enable CarrotBlender functionality."
+        _settings.get("hide_carrotjuicer").hidden=True
+
+
+    # Hide broken settings
+    if 'IS_UL_GLOBAL' in os.environ or 'IS_JP_STEAM' in os.environ:
+        _settings.get("lock_game_window").hidden=True
 
 
 class SettingsHandler():

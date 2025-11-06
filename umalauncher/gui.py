@@ -1,5 +1,7 @@
 import copy
 import math
+import traceback
+
 from loguru import logger
 import PyQt5.QtCore as qtc
 import PyQt5.QtWidgets as qtw
@@ -1387,14 +1389,18 @@ class UmaErrorPopup(qtw.QMessageBox):
             try:
                 resp = requests.post(url, json=json)
                 resp.raise_for_status()
+                logger.info(f"Uploaded error report.")
                 util.show_info_box( "Success", "Error report successfully uploaded." )
-            except Exception:
+            except Exception as e:
+                logger.error(f"Error uploading error report:")
+                logger.error(traceback.format_exc())
                 util.show_error_box("Error", "Failed to upload error report.")
 
         logger.debug("Uploading error report")
         version_str = version.VERSION
         if util.is_script:
             version_str += ".script"
+        version_str += " (" + util.get_game_variant_string() + ")"
         thread = threading.Thread(target=do_error_request, args = ( "https://umalauncher.uc.r.appspot.com/api/v1/umalauncher/error", {"traceback": traceback_str, "user_id": user_id, "version": version_str} ) )
         thread.start()
 
@@ -1441,7 +1447,7 @@ class AboutDialog(UmaMainDialog):
         sizePolicy.setHeightForWidth(self.lbl_about.sizePolicy().hasHeightForWidth())
         self.lbl_about.setSizePolicy(sizePolicy)
         self.lbl_about.setLayoutDirection(qtc.Qt.LeftToRight)
-        self.lbl_about.setText("""<html><head><meta name="qrichtext" content="1" /><style type="text/css">p, li { white-space: pre-wrap; }</style></head><body style=" font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;"><p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Created by KevinVG207 and <a href="https://github.com/KevinVG207/UmaLauncher/graphs/contributors">Contributors</a><br /><a href="https://github.com/KevinVG207/UmaLauncher"><span style=" text-decoration: underline; color:#0000ff;">Github</span></a> - <a href="https://umapyoi.net/uma-launcher"><span style=" text-decoration: underline; color:#0000ff;">Website</span></a> - <a href="https://twitter.com/kevinvg207"><span style=" text-decoration: underline; color:#0000ff;">Twitter</span></a></p><a href="https://github.com/KevinVG207/UmaLauncher/blob/main/FAQ.md">Frequently Asked Questions</a></p><p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><b>Special thanks to:</b><br /><a href="https://github.com/CNA-Bld"><span style=" text-decoration: underline; color:#0000ff;">CNA-Bld</span></a> for the race data parser and CarrotJuicer.<br /></p></body></html>""")
+        self.lbl_about.setText("""<html><head><meta name="qrichtext" content="1" /><style type="text/css">p, li { white-space: pre-wrap; }</style></head><body style=" font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;"><p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Created by KevinVG207 and <a href="https://github.com/qwcan/UmaLauncher/graphs/contributors">Contributors</a><br /><a href="https://github.com/qwcan/UmaLauncher"><span style=" text-decoration: underline; color:#0000ff;">Github</span></a> - <a href="https://umapyoi.net/uma-launcher"><span style=" text-decoration: underline; color:#0000ff;">Website</span></a> - <a href="https://twitter.com/kevinvg207"><span style=" text-decoration: underline; color:#0000ff;">Twitter</span></a></p><a href="https://github.com/KevinVG207/UmaLauncher/blob/main/FAQ.md">Frequently Asked Questions</a></p><p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><b>Special thanks to:</b><br /><a href="https://github.com/CNA-Bld"><span style=" text-decoration: underline; color:#0000ff;">CNA-Bld</span></a> for the race data parser and CarrotJuicer.<br /></p></body></html>""")
         self.lbl_about.setOpenExternalLinks(True)
         self.lbl_about.setAlignment(qtc.Qt.AlignCenter)
 

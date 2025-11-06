@@ -1,5 +1,7 @@
 import sqlite3
 import os
+import traceback
+
 from loguru import logger
 import util
 import constants
@@ -10,18 +12,29 @@ def get_db_path():
     global DB_PATH
     if DB_PATH:
         return DB_PATH
-    DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb")
+    if 'IS_UL_GLOBAL' in os.environ:
+        DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\Umamusume\\master\\master.mdb")
+    else:
+        if 'IS_JP_STEAM' in os.environ:
+            DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\UmamusumePrettyDerby_Jpn\\master\\master.mdb")
+        else:
+            DB_PATH = os.path.expandvars("%userprofile%\\AppData\\LocalLow\\Cygames\\umamusume\\master\\master.mdb")
     if not os.path.exists(DB_PATH):
         logger.debug( f"Could not find mdb at path: {DB_PATH}, trying game install directory")
-        game_path = util.get_game_folder()
-        if game_path is None:
-            logger.error(f"Could not find mdb at path: {DB_PATH}, and could not find game install directory.")
-            util.show_error_box_no_report("Uma Launcher: No game install path found.",
-                                f"Could not the game database file at path: {DB_PATH}, and could not find game install directory. Ensure you have the game installed via DMM.")
+        game_install_path = util.get_game_folder()
+        if game_install_path is None:
+            logger.error(f"Could not find game install path")
+            util.show_error_box_no_report("Error",f"Could not the game database file at path: {DB_PATH}, and could not find game install directory. Ensure you have the game installed. <br>Uma Launcher will now close.")
             if gui.THREADER:
                 gui.THREADER.stop()
             return DB_PATH
-        DB_PATH = os.path.join( util.get_game_folder(), "umamusume_Data\\Persistent\\master\\master.mdb")
+        if 'IS_UL_GLOBAL' in os.environ:
+            # Global doesn't use this yet, but just in case it updates
+            DB_PATH = os.path.join( game_install_path, "UmamusumePrettyDerby_Data\\Persistent\\master\\master.mdb")
+        elif 'IS_JP_STEAM' in os.environ:
+            DB_PATH = os.path.join( game_install_path, "UmamusumePrettyDerby_Jpn_Data\\Persistent\\master\\master.mdb")
+        else:
+            DB_PATH = os.path.join( game_install_path, "umamusume_Data\\Persistent\\master\\master.mdb")
         if not os.path.exists(DB_PATH):
             logger.error(f"Could not find mdb at game install path: {DB_PATH}")
             util.show_error_box_no_report("Error",f"Could not find the game database file.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
@@ -29,6 +42,7 @@ def get_db_path():
                 gui.THREADER.stop()
     logger.debug( f"Using mdb path: {DB_PATH}")
     return DB_PATH
+
 
 def update_mdb_cache():
     logger.info("Reloading cached dicts.")
@@ -39,7 +53,10 @@ def update_mdb_cache():
 class Connection():
     def __init__(self):
         try:
-            self.conn = sqlite3.connect(f"file:{get_db_path()}?mode=ro", uri=True)
+            db_path = get_db_path()
+            if db_path is None:
+                raise sqlite3.OperationalError("Database path could not be determined.")
+            self.conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         except sqlite3.OperationalError:
             util.show_error_box_no_report("Connection Error", "Could not connect to the game database.<br>Try restarting Uma Launcher after the game updates.<br>Uma Launcher will now close.")
             if gui.THREADER:
@@ -152,6 +169,9 @@ def get_event_titles(story_id, card_id):
         event_titles = _get_event_titles_default(story_id)
     
     event_titles = [event_title for event_title in event_titles if event_title]
+
+    # Replace the line breaks with spaces
+    event_titles = [event_title.replace("\\n", " ") for event_title in event_titles]
 
     if not event_titles:
         event_titles = ["NO EVENT TITLE"]
@@ -360,13 +380,16 @@ def get_mant_item_string_dict(force=False):
     global MANT_ITEM_STRING_DICT
     if force or not MANT_ITEM_STRING_DICT:
         with Connection() as (_, cursor):
-            cursor.execute(
-                """SELECT "index", text FROM text_data WHERE category = 225"""
-            )
-            rows = cursor.fetchall()
+            try:
+                cursor.execute(
+                    """SELECT "index", text FROM text_data WHERE category = 225"""
+                )
+                rows = cursor.fetchall()
+                MANT_ITEM_STRING_DICT.update({row[0]: row[1] for row in rows})
+            except sqlite3.OperationalError as e:
+                logger.error(f"get_mant_item_string_dict failed: {e}\n{traceback.format_exc()}")
 
-        MANT_ITEM_STRING_DICT.update({row[0]: row[1] for row in rows})
-    
+
     return MANT_ITEM_STRING_DICT
 
 GL_LESSON_DICT = {}
@@ -374,12 +397,15 @@ def get_gl_lesson_dict(force=False):
     global GL_LESSON_DICT
     if force or not GL_LESSON_DICT:
         with Connection() as (_, cursor):
-            cursor.execute(
-                """SELECT s.id, t.text, s.square_type FROM single_mode_live_square s JOIN text_data t ON t."index" = s.square_title_text_id AND t.category = 209"""
-            )
-            rows = cursor.fetchall()
+            try:
+                cursor.execute(
+                    """SELECT s.id, t.text, s.square_type FROM single_mode_live_square s JOIN text_data t ON t."index" = s.square_title_text_id AND t.category = 209"""
+                )
+                rows = cursor.fetchall()
 
-        GL_LESSON_DICT.update({row[0]: (row[1], row[2]) for row in rows})
+                GL_LESSON_DICT.update({row[0]: (row[1], row[2]) for row in rows})
+            except sqlite3.OperationalError as e:
+                logger.error( f"get_gl_lesson_dict failed: {e}\n{traceback.format_exc()}")
     
     return GL_LESSON_DICT
 
@@ -388,13 +414,15 @@ def get_group_card_effect_ids(force=False):
     global GROUP_CARD_EFFECT_IDS
     if force or not GROUP_CARD_EFFECT_IDS:
         with Connection() as (_, cursor):
-            cursor.execute(
-                """SELECT id, effect_id FROM support_card_data WHERE support_card_type = 3"""
-            )
-            rows = cursor.fetchall()
-        
-        if rows:
-            GROUP_CARD_EFFECT_IDS[:] = rows  # Thanks StellatedCube
+            try:
+                cursor.execute(
+                    """SELECT id, effect_id FROM support_card_data WHERE support_card_type = 3"""
+                )
+                rows = cursor.fetchall()
+                if rows:
+                    GROUP_CARD_EFFECT_IDS[:] = rows  # Thanks StellatedCube
+            except sqlite3.OperationalError as e:
+                logger.error(f"get_group_card_effect_ids failed: {e}\n{traceback.format_exc()}")
 
     return GROUP_CARD_EFFECT_IDS
 
@@ -453,10 +481,15 @@ def get_scouting_score_to_rank_dict(force=False):
     global SCOUTING_SCORE_TO_RANK_DICT
     if force or not SCOUTING_SCORE_TO_RANK_DICT:
         with Connection() as (_, cursor):
-            cursor.execute(
-                """SELECT team_min_value FROM team_building_rank"""
-            )
-            rows = cursor.fetchall()
+            try:
+
+                cursor.execute(
+                    """SELECT team_min_value FROM team_building_rank"""
+                )
+                rows = cursor.fetchall()
+            except sqlite3.OperationalError as e:
+                logger.error(f"get_group_card_effect_ids failed: {e}\n{traceback.format_exc()}")
+                rows = []
 
         tmp_dict = {}
         for i, row in enumerate(rows):

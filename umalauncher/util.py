@@ -4,6 +4,7 @@ import base64
 import io
 import ctypes
 import win32event
+from SteamPathFinder import get_app_path, get_steam_path, get_game_path
 from win32com.shell.shell import ShellExecuteEx
 from win32com.shell import shellcon
 import win32con
@@ -26,7 +27,12 @@ if hasattr(sys, "_MEIPASS"):
     os.chdir(relative_dir)
 is_debug = is_script
 
-appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher\\")
+if 'IS_UL_GLOBAL' in os.environ:
+    appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher-Global\\")
+elif 'IS_JP_STEAM' in os.environ:
+    appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher-JP-Steam\\")
+else:
+    appdata_dir = os.path.expandvars("%AppData%\\Uma-Launcher\\")
 
 if is_script:
     appdata_dir = os.path.join(relative_dir, "appdata")
@@ -153,10 +159,21 @@ def do_get_request(url, error_title=None, error_message=None, ignore_timeout=Fal
 def get_game_folder():
     game_data = None
     try:
-        with open(os.path.expandvars("%AppData%\\dmmgameplayer5\\dmmgame.cnf"), "r", encoding='utf-8') as f:
-            game_data = json.loads(f.read())
+        if 'IS_JP_STEAM' in os.environ:
+            steam_path = get_steam_path()
+            app_id = "3564400"
+            game_name = "UmamusumePrettyDerby_Jpn"
+            try:
+                return get_game_path(steam_path, app_id, game_name)
+            except FileNotFoundError as e:
+                logger.error( "Could not locate steam JP game directory!" )
+                logger.error(traceback.format_exc())
+                return None
+        else:
+            with open(os.path.expandvars("%AppData%\\dmmgameplayer5\\dmmgame.cnf"), "r", encoding='utf-8') as f:
+                game_data = json.loads(f.read())
     except OSError as e:
-        logger.error( "Could not locate game directory!")
+        logger.error( "Could not locate DMM game directory!")
         logger.error(traceback.format_exc())
         show_error_box_no_report("Error", "Could not locate game directory (tried reading %AppData%\\dmmgameplayer5\\dmmgame.cnf).<br> Make sure that you have DMM Game Player installed.")
         return None
@@ -338,6 +355,12 @@ def get_window_handle(query: str, type=LAZY) -> str:
 def get_game_handle():
     return get_window_handle("umamusume", type=EXACT)
 
+def get_game_handle_global():
+    return get_window_handle("Umamusume", type=EXACT)
+
+def get_game_handle_jp_steam():
+    return get_window_handle("UmamusumePrettyDerby_Jpn", type=EXACT)
+
 
 def get_position_rgb(image: Image.Image, position: tuple[float,float]) -> tuple[int,int,int]:
     pixel_color = None
@@ -490,10 +513,15 @@ def get_race_name_dict(force=False):
         downloaded_race_name_dict.update(race_name_dict)
     return downloaded_race_name_dict
 
-def create_gametora_helper_url(card_id, scenario_id, support_ids, language="English"):
+def create_gametora_helper_url(card_id, scenario_id, support_ids, language="English", server="ja"):
     support_ids = list(map(str, support_ids))
+    if len(support_ids) < 6:
+        logger.error("Support_ids list does not contain 6 items!")
+        logger.error(support_ids)
+        # Pad it to length of 6 with zeros
+        support_ids += ['0'] * (6 - len(support_ids))
     language_segment = constants.GT_LANGUAGE_URL_DICT.get(language, "")
-    return f"https://gametora.com/{language_segment}umamusume/training-event-helper?deck={np.base_repr(int(str(card_id) + str(scenario_id)), 36)}-{np.base_repr(int(support_ids[0] + support_ids[1] + support_ids[2]), 36)}-{np.base_repr(int(support_ids[3] + support_ids[4] + support_ids[5]), 36)}".lower()
+    return f"https://gametora.com/{language_segment}umamusume/training-event-helper?deck={np.base_repr(int(str(card_id) + str(scenario_id)), 36)}-{np.base_repr(int(support_ids[0] + support_ids[1] + support_ids[2]), 36)}-{np.base_repr(int(support_ids[3] + support_ids[4] + support_ids[5]), 36)}&server={server}".lower()
 
 gm_fragment_dict = {}
 def get_gm_fragment_dict(force=False):
@@ -641,3 +669,11 @@ UPDATE_FUNCS = [
     get_rmu_image_dict,
     get_group_support_id_to_passion_zone_effect_id_dict,
 ]
+
+def get_game_variant_string():
+    if 'IS_UL_GLOBAL' in os.environ:
+        return "Global"
+    elif 'IS_JP_STEAM' in os.environ:
+        return "JP Steam"
+    else:
+        return "DMM"

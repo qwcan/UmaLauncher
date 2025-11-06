@@ -1,3 +1,4 @@
+import os
 import time
 from loguru import logger
 import util
@@ -159,6 +160,9 @@ class WindowMover():
         self.prev_auto_resize = self.threader.settings["lock_game_window"]
     
     def try_maximize(self):
+        if 'IS_UL_GLOBAL' in os.environ or 'IS_JP_STEAM' in os.environ:
+            logger.info('Not auto maximizing (in global or jp steam mode)')
+            return
         if self.window:
             new_pos, is_portrait = self.window.calc_max_and_center_pos()
             self.threader.settings.save_game_position(new_pos, is_portrait)
@@ -197,6 +201,11 @@ class WindowMover():
             # Toggle to auto-resize
 
             auto_resize = self.threader.settings["lock_game_window"]
+
+            if auto_resize and ('IS_UL_GLOBAL' in os.environ or 'IS_JP_STEAM' in os.environ):
+                logger.info('Disabling auto resize (in global or jp steam mode)')
+                self.threader.settings["lock_game_window"] = False
+                auto_resize = False
 
             if auto_resize:
 

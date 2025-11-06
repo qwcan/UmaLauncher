@@ -5,3 +5,4 @@ tests/packets/*
 *__pycache__*
 *.log*
 sandbox.*
+.idea/*

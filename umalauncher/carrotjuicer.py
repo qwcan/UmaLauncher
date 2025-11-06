@@ -1,3 +1,4 @@
+import io
 import os
 import time
 import glob
@@ -5,9 +6,11 @@ import traceback
 import math
 import json
 from datetime import datetime
+from inspect import trace
 
 import msgpack
 from loguru import logger
+from msgpack import Unpacker
 from selenium.common.exceptions import NoSuchWindowException
 import screenstate_utils
 import util
@@ -16,8 +19,21 @@ import mdb
 import helper_table
 import training_tracker
 import horsium
+import socket
 
-class CarrotJuicer():
+from Cryptodome.Cipher import AES
+
+def unpack(data: bytes, key: bytes, iv: bytes) -> bytes:
+    logger.debug(f"Unpacking:\nData: {data.hex()}\nKey: {key.hex()}\nIV: {iv.hex()}")
+    cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+    decrypted = cipher.decrypt(data)
+    decrypted = decrypted[4:]
+    b = io.BytesIO(decrypted)
+    unpacker = Unpacker(file_like=b)
+    return unpacker.unpack()
+
+
+class CarrotJuicer:
     browser: horsium.BrowserWindow = None
     previous_element = None
     threader = None
@@ -39,6 +55,13 @@ class CarrotJuicer():
     skill_browser = None
     last_skills_rect = None
     skipped_msgpacks = []
+
+    sock: socket = None
+    MAX_BUFFER_SIZE = 65535
+
+    key = None
+    iv = None
+    encrypted_data = None
 
     def __init__(self, threader):
         self.threader = threader
@@ -65,7 +88,18 @@ class CarrotJuicer():
         self.start_time = math.floor(time.time() * 1000)
 
 
-    def load_request(self, msg_path):
+    def load_request(self, msg_path, is_json=False):
+        if is_json:
+            # First 4 bytes are a header
+            try:
+                unpacked = msgpack.unpackb(msg_path[4:])
+                for key in constants.REQUEST_KEYS_TO_BE_REMOVED:
+                    if key in unpacked:
+                        del unpacked[key]
+                return unpacked
+            except Exception as e:
+                logger.error(f"Error unpacking request: {e}\n{traceback.format_exc()}")
+                return None
         try:
             with open(msg_path, "rb") as in_file:
                 unpacked = msgpack.unpackb(in_file.read()[170:], strict_map_key=False)
@@ -101,7 +135,7 @@ class CarrotJuicer():
         d = packet_data['start_chara']
         supports = d['support_card_ids'] + [d['friend_support_card_info']['support_card_id']]
 
-        return util.create_gametora_helper_url(d['card_id'], d['scenario_id'], supports, self.get_gt_language())
+        return util.create_gametora_helper_url(d['card_id'], d['scenario_id'], supports, self.get_gt_language(), "en" if 'IS_UL_GLOBAL' in os.environ else "ja")
 
     def get_gt_language(self):
         lang = "English"
@@ -189,9 +223,14 @@ class CarrotJuicer():
 
 
     EVENT_ID_TO_POS_STRING = {
-        7005: 'レース勝利！',  # (1st)
+        7005: 'レース勝利！', # (1st)
         7006: 'レース入着',  # (2nd-5th)
-        7007: 'レース敗北'  # (6th or worse)
+        7007: 'レース敗北'   # (6th or worse)
+    }
+    EVENT_ID_TO_POS_STRING_GLB = {
+        7005: 'Victory!',
+        7006: 'Solid Showing',
+        7007: 'Defeat'
     }
 
     def get_after_race_event_title(self, event_id):
@@ -211,7 +250,11 @@ class CarrotJuicer():
             grade_text = "G2/G3"
         else:
             grade_text = "G1"
-        return [f"{self.EVENT_ID_TO_POS_STRING[event_id]} ({grade_text})"]
+        if 'IS_UL_GLOBAL' in os.environ:
+            return [f"{self.EVENT_ID_TO_POS_STRING_GLB[event_id]} ({grade_text})"]
+        else:
+            return [f"{self.EVENT_ID_TO_POS_STRING[event_id]} ({grade_text})"]
+
 
     def handle_response(self, message, is_json=False):
         if is_json:
@@ -324,11 +367,18 @@ class CarrotJuicer():
 
 
             # Gametora
-            if 'chara_info' in data:
+            # limited_shop_info check is for edge case where chara_info is present when returning to home after training
+            if 'chara_info' in data and not 'limited_shop_info' in data:
                 # Inside training run.
 
-                training_id = data['chara_info']['start_time']
-                if not self.training_tracker or not self.training_tracker.training_id_matches(training_id):
+                training_id = ""
+                if 'start_time' in data['chara_info']:
+                    training_id = data['chara_info']['start_time']
+                else:
+                    #TODO: fix this!
+                    logger.debug("No start_time, using strftime")
+                    training_id = time.strftime("%Y-%m-%d %H:%M:%S")
+                if 'IS_UL_GLOBAL' not in os.environ and (not self.training_tracker or not self.training_tracker.training_id_matches(training_id)):
                     # Update cached dicts first
                     mdb.update_mdb_cache()
 
@@ -358,7 +408,8 @@ class CarrotJuicer():
                 logger.debug(f"Skills list: {self.skills_list}")
 
                 # Add request to tracker
-                self.add_response_to_tracker(data)
+                if self.training_tracker:
+                    self.add_response_to_tracker(data)
 
                 # Training info
                 outfit_id = data['chara_info']['card_id']
@@ -374,7 +425,7 @@ class CarrotJuicer():
 
                 if not self.browser or not self.browser.current_url().startswith(self.browser.url.split("?",1)[0]):
                     logger.info("GT tab not open, opening tab")
-                    self.helper_url = util.create_gametora_helper_url(outfit_id, scenario_id, supports, self.get_gt_language())
+                    self.helper_url = util.create_gametora_helper_url(outfit_id, scenario_id, supports, self.get_gt_language(), "en" if 'IS_UL_GLOBAL' in os.environ else "ja")
                     logger.debug(f"Helper URL: {self.helper_url}")
                     self.open_helper()
                 
@@ -425,7 +476,7 @@ class CarrotJuicer():
                     event_element = self.determine_event_element(event_titles)
 
                     if not event_element:
-                        logger.debug(f"Could not find event on GT page: {event_data['story_id']}")
+                        logger.info(f"Could not find event on GT page: {event_data['story_id']} : {event_titles}")
                     self.browser.execute_script("""
                         if (arguments[0]) {
                             arguments[0].click();
@@ -456,8 +507,8 @@ class CarrotJuicer():
         self.screen_state_handler.carrotjuicer_state = screenstate_utils.make_concert_state(music_id, self.threader.screenstate)
         return
 
-    def handle_request(self, message):
-        data = self.load_request(message)
+    def handle_request(self, message, is_json=False):
+        data = self.load_request(message, is_json=is_json)
 
         if not data:
             return
@@ -663,20 +714,36 @@ class CarrotJuicer():
             util.show_error_box("Critical Error", "Uma Launcher has encountered a critical error and will now close.")
             self.threader.stop()
 
-
     def run(self):
         try:
-            base_path = util.get_game_folder()
+            base_path = None
+            if 'IS_UL_GLOBAL' not in os.environ:
+                base_path = util.get_game_folder()
 
-            if not base_path:
-                logger.error("Packet intercept enabled but no game path found")
-                util.show_error_box("Uma Launcher: No game install path found.", "Ensure you have the game installed via DMM.")
-                return
+                if not base_path:
+                    logger.error("Packet intercept enabled but no game path found")
+                    util.show_error_box("Uma Launcher: No game install path found.", "Ensure you have the game installed.")
+                    return
 
+            if 'IS_UL_GLOBAL' in os.environ:
+                port = self.threader.settings["carrotblender_port"]
+                ip_address = self.threader.settings["carrotblender_host"]
+                try:
+                    self.sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+                    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.threader.settings["carrotblender_max_buffer_size"])
+                    logger.info(f"Max buffer size: {self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}" )
+                    self.sock.bind( (ip_address, port) )
+                except socket.error as message:
+                    util.show_warning_box("Uma Launcher: Error initializing CarrotJuicer.",
+                                        f"Could not bind to {ip_address}:{port}")
+
+            chunks_left = 0
             while not self.should_stop:
-                time.sleep(0.25)
 
-                msg_path = os.path.join(base_path, "CarrotJuicer")
+                msg_path = None
+                if 'IS_UL_GLOBAL' not in os.environ:
+                    time.sleep(0.25)
+                    msg_path = os.path.join(base_path, "CarrotJuicer")
 
                 if not self.threader.settings["enable_carrotjuicer"] or not self.threader.settings['enable_browser']:
                     if self.browser and self.browser.alive():
@@ -721,9 +788,83 @@ class CarrotJuicer():
                         logger.error(traceback.format_exc())
                         pass
 
-                messages = self.get_msgpack_batch(msg_path)
-                for message in messages:
-                    self.process_message(message)
+                if 'IS_UL_GLOBAL' not in os.environ:
+                    messages = self.get_msgpack_batch(msg_path)
+                    for message in messages:
+                        self.process_message(message)
+                else:
+                    logger.debug("Waiting for message...")
+                    try:
+                        message = self.sock.recv(self.MAX_BUFFER_SIZE)
+                        logger.debug(f"Received {len(message)} bytes of data")
+                    except Exception as e:
+                        #TODO: kill the socket in a "good" way that doesn't throw an exception here
+                        logger.error(f"Socket interrupted: {e}\n{traceback.format_exc()}")
+                        continue
+                    if message == b'':
+                        # Shouldn't happen
+                        logger.error(f"Socket read no data!")
+                        continue
+                    if len(message) < 2:
+                        logger.error( f"Invalid message (invalid length): {message.hex()}")
+                        continue
+                    msg_type = message[0]
+                    msg_len = 0
+                    if msg_type != 4:
+                        msg_len = message[1] * 256 + message[2]
+                        if len(message) < msg_len:
+                            logger.error( f"Invalid message (incomplete): {message.hex()}")
+                            continue
+                        message = message[3:msg_len+3]
+
+                    if msg_type == 0:# Data (full)
+                        logger.debug(f"Processing data: {message.hex()}")
+                        self.encrypted_data = message
+                    elif msg_type == 1: # Key
+                        logger.debug(f"Processing key: {message.hex()}")
+                        self.key = message
+                    elif msg_type == 2: # IV
+                        logger.debug(f"Processing IV: {message.hex()}")
+                        self.iv = message
+
+                        # TODO: check chunks_left to see if we dropped one or more
+                        if self.key is not None and self.iv is not None and self.encrypted_data is not None and self.encrypted_data != b'':
+                            try:
+                                unpacked = unpack(self.encrypted_data, self.key, self.iv)
+                                logger.debug("Unpacked message:")
+                                logger.debug(unpacked)
+                                self.handle_response(unpacked, is_json=True)
+                                # TODO: we could probably keep the key as it shouldn't change
+                                self.key = None
+                                self.iv = None
+                                self.encrypted_data = None
+                            except Exception as e:
+                                logger.error(f"Error decoding and handling message: {e}")
+                                logger.error(traceback.format_exc())
+                                self.key = None
+                                self.iv = None
+                                self.encrypted_data = None
+                        else:
+                            logger.warning( f"Ignoring message: data, key and/or IV is not set!")
+                    elif msg_type == 3: # Request (unencrypted msgpack)
+                        logger.debug(f"Processing request: {message.hex()}")
+                        logger.debug(f"Unpacked request: {msgpack.unpackb(message[4:])}")
+                        self.handle_request( message, is_json=True)
+                    elif msg_type == 4: # Data (multipart header)
+                        chunks_left = message[1]
+                        self.encrypted_data = b''
+                        logger.debug(f"Got multipart response header with {chunks_left} chunks")
+                    elif msg_type == 5: # Data (multipart chunk)
+                        if chunks_left < 1:
+                            logger.error( "Got unexpected multipart message chunk!")
+                            continue
+                        chunks_left -= 1
+                        logger.debug(f"Got chunk of size {msg_len}: {message.hex()}")
+                        self.encrypted_data += message
+                    else:
+                        logger.error( f"Invalid message (invalid type): {message.hex()}")
+                        continue
+
         except NoSuchWindowException:
             pass
 
@@ -743,6 +884,10 @@ class CarrotJuicer():
 
     def stop(self):
         self.should_stop = True
+        if self.sock is not None:
+            logger.info("Stopping CarrotBlender socket")
+            self.sock.shutdown(socket.SHUT_RDWR)
+            self.sock.close()
 
 
 
@@ -887,9 +1032,12 @@ def setup_helper_page(browser: horsium.BrowserWindow):
     gametora_dark_mode(browser)
 
     # Enable all cards
-    # This is no longer easily accessible :(
     browser.execute_script("""
     var settings = document.querySelector("[class^='filters_settings_button_']");
+    if( settings == null )
+    {
+       settings = document.getElementById("teh-settings-open");
+    }
     if( settings == null )
     {
        settings = Array.from(document.querySelectorAll('div')).find( el => el.textContent === "Settings");
@@ -901,6 +1049,8 @@ def setup_helper_page(browser: horsium.BrowserWindow):
        settings.click();
     }
     """)
+    while not browser.execute_script("""return document.getElementById("allAtOnceCheckbox");"""):
+        time.sleep(0.125)
     all_cards_enabled = browser.execute_script("""return document.getElementById("allAtOnceCheckbox").checked;""")
     if not all_cards_enabled:
         browser.execute_script("""document.getElementById("allAtOnceCheckbox").click()""")
@@ -967,28 +1117,28 @@ def gametora_dark_mode(browser: horsium.BrowserWindow):
 
 
 def gametora_remove_cookies_banner(browser: horsium.BrowserWindow):
-    pass
-    # TODO: Is the cookies banner gone now?
-    #times = 20
-    #found_banner = True
-    #while not browser.execute_script("""return document.getElementById("adnote");"""):
-    #    times -= 1
-    #    if times <= 0:
-    #        found_banner = False
-    #        logger.warning( "Unable to find cookies banner after 5 seconds")
-    #        break
-    #    time.sleep(0.25)
-    #
-    #if found_banner:
-    #    # Hide the cookies banner
-    #    browser.execute_script("""document.getElementById("adnote").style.display = 'none';""")
+    # Hide the cookies banner
+    browser.execute_script("""
+            if( window.removeCookiesId == null ) {
+                window.removeCookiesId = setInterval( function() {
+                    if( document.getElementById("adnote") != null) {
+                        document.getElementById("adnote").style.display = 'none';
+                    }
+                }, 5 * 1000);
+            }
+            """)
 
 def gametora_close_ad_banner(browser: horsium.BrowserWindow):
     # Close the ad banner at the bottom
     browser.execute_script("""
+            if( window.removeBannerAdId == null ) {
+                window.removeBannerAdId = setInterval( function() {
                     if( document.getElementsByClassName("publift-widget-sticky_footer-container")[0] != null ){
                         document.getElementsByClassName("publift-widget-sticky_footer-container")[0].classList.add("closed")
-                    }""")
+                    }
+                }, 5 * 1000);
+            }
+            """)
 
     # Close the top support cards thing, super jank
     browser.execute_script("""
