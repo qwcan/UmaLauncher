@@ -1,5 +1,7 @@
 import copy
 import math
+import traceback
+
 from loguru import logger
 import PyQt5.QtCore as qtc
 import PyQt5.QtWidgets as qtw
@@ -1387,8 +1389,11 @@ class UmaErrorPopup(qtw.QMessageBox):
             try:
                 resp = requests.post(url, json=json)
                 resp.raise_for_status()
+                logger.info(f"Uploaded error report.")
                 util.show_info_box( "Success", "Error report successfully uploaded." )
-            except Exception:
+            except Exception as e:
+                logger.error(f"Error uploading error report:")
+                logger.error(traceback.format_exc())
                 util.show_error_box("Error", "Failed to upload error report.")
 
         logger.debug("Uploading error report")
