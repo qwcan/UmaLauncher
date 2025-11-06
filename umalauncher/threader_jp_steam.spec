@@ -33,7 +33,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='UmaLauncher (Steam)',
+    name='UmaLauncher-Steam',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
