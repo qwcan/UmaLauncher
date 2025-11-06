@@ -276,7 +276,7 @@ class ScreenStateHandler():
                     if not self.game_seen:
                         # Enable DMM-only VPN
                         #TODO: vpn to USA if on global and flag is set
-                        if 'IS_UL_GLOBAL'not  in os.environ and self.threader.settings["vpn_enabled"] and self.threader.settings["vpn_dmm_only"]:
+                        if 'IS_UL_GLOBAL' not in os.environ and self.threader.settings["vpn_enabled"] and self.threader.settings["vpn_dmm_only"]:
                             self.vpn = vpn.create_client(self.threader)
                             self.vpn.connect()
 

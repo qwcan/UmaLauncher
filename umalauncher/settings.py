@@ -343,8 +343,15 @@ class DefaultSettings(se.NewSettings):
                 '127.0.0.1',
                 se.SettingType.STRING,
                 hidden=True
+            ),
+            "carrotblender_max_buffer_size": se.Setting(
+                "CarrotBlender Max Buffer Size",
+                "Buffer size for CarrotBlender (in bytes). Don't change this unless you really know what you're doing.",
+                262144, # TODO this is completely arbitrary
+                se.SettingType.INT,
+                hidden=True,
+                max_value=1048576 # 1MB
             )
-            # TODO: Max buffer size?
         })
         _settings.get("enable_carrotjuicer").name = "Enable CarrotBlender"
         _settings.get("enable_carrotjuicer").description = "Enable CarrotBlender functionality."
