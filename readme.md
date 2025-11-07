@@ -8,20 +8,21 @@ For questions and feedback, join the Discord server:
 [![Uma Launcher Discord server](https://discordapp.com/api/guilds/1416044589877559497/widget.png?style=banner2)](https://discord.gg/xd4EbvKBaf)
 
 ## Requirements (Optional but recommended)
-### NOTE: The original version of CarrotJuicer available on GitHub does not work with the current Japanese Version of Uma Musume.<br> Either use one of the updated forks or get the dll from the Hachimi Discord server.
-The global version of Uma Launcher requires CarrotBlender, also available on [the Hachimi Discord server](https://discord.gg/BVEt5FcxEn). The install instructions are the same as CarrotJuicer.
+### NOTE: The original version of CarrotJuicer available on GitHub does not work with the current Japanese Version of Uma Musume.<br> Either use one of the updated forks or get the dll from the Discord server.
+The global version of Uma Launcher requires CarrotBlender, also available on [the Discord server](https://discord.gg/xd4EbvKBaf). The install instructions are the same as CarrotJuicer.
 <details>
   <summary>CarrotJuicer</summary>
   
 - [CarrotJuicer](https://github.com/hayaunderscore/CarrotJuicer) (Not made by me.)
   - CarrotJuicer/CarrotBlender require a build of Hachimi with plugin support, preferably [Hachimi-Edge](https://github.com/kairusds/Hachimi-Edge/releases/latest).<br>
+  A build of Hachimi with plugin support for the global version is available on [the Discord server](https://discord.gg/xd4EbvKBaf).<br>
   Use the installer exe to install Hachimi (you may need to restart your computer after installation).<br>
   See [the Hachimi-Edge website](https://hachimi.noccu.art/) and the [Discord server](https://discord.gg/BVEt5FcxEn) for details.
-  - Download the latest version, preferably from the Hachimi discord server.
+  - Download the latest version, preferably from the Discord server.
   - Copy the .dll file into the `hachimi` folder in the game's install directory.
   - Edit the `config.json` file in that folder to add the dll to the `load_libraries` list.<br>
   For example, if the file is named `carrotjuicer.dll` then the line should be `"load_libraries": ["hachimi\\carrotjuicer.dll"],`
-  - While optional, CarrotJuicer allows Uma Launcher to extract information from the network packets the game sends/receives. This information is necessary to determine the current status of the game, and needed for most of the features of Uma Launcher to work.
+  - While optional, CarrotJuicer/CarrotBlender allows Uma Launcher to extract information from the network packets the game sends/receives. This information is necessary to determine the current status of the game, and needed for most of the features of Uma Launcher to work.
 
 </details>
 
