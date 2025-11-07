@@ -367,12 +367,21 @@ class HelperTable():
                 bond_gains_useful.append(training_partner.useful_bond)
 
             unity_partner_count = 0
+            useful_unity_partner_count = 0
             spirit_explosion_partner_count = 0
-            for _ in command.get('guide_event_partner_array', []):
-                unity_partner_count += 1
-            for _ in command.get('soul_event_partner_array', []):
-                unity_partner_count += 1
-                spirit_explosion_partner_count += 1
+            if 'team_data_set' in data:
+                for partner in command.get('guide_event_partner_array', []):
+                    # find partner in the evaluation_info_array
+                    entry = next((d for d in data['team_data_set'].get('evaluation_info_array') if d["target_id"] == partner), None)
+
+                    # increase count if not exploded
+                    if entry.get("soul_event_state") == 0:
+                        useful_unity_partner_count += 1
+
+                    unity_partner_count += 1
+                for _ in command.get('soul_event_partner_array', []):
+                    unity_partner_count += 1
+                    spirit_explosion_partner_count += 1
 
             total_bond = sum(bond_gains_total)
             useful_bond = sum(bond_gains_useful)
@@ -536,6 +545,7 @@ class HelperTable():
                 'uaf_sport_gain': uaf_sport_gain,
                 'onsen_points_gain': onsen_points_gain,
                 'unity_partner_count': unity_partner_count,
+                'useful_unity_partner_count': useful_unity_partner_count,
                 'spirit_explosion_partner_count': spirit_explosion_partner_count,
             }
 
