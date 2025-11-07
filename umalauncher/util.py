@@ -159,7 +159,17 @@ def do_get_request(url, error_title=None, error_message=None, ignore_timeout=Fal
 def get_game_folder():
     game_data = None
     try:
-        if 'IS_JP_STEAM' in os.environ:
+        if 'IS_UL_GLOBAL' in os.environ:
+            steam_path = get_steam_path()
+            app_id = "3224770"
+            game_name = "UmamusumePrettyDerby"
+            try:
+                return get_game_path(steam_path, app_id, game_name)
+            except FileNotFoundError as e:
+                logger.error("Could not locate steam game directory!")
+                logger.error(traceback.format_exc())
+                return None
+        elif 'IS_JP_STEAM' in os.environ:
             steam_path = get_steam_path()
             app_id = "3564400"
             game_name = "UmamusumePrettyDerby_Jpn"
