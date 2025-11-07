@@ -673,6 +673,74 @@ class UsefulPartnerCountRow(hte.Row):
         return cells
 
 
+class UnityTrainingCountSettings(se.NewSettings):
+    _settings = {
+        "highlight_max": se.Setting(
+            "Highlight max",
+            "Highlights the facility with the most Unity Training partners.",
+            True,
+            se.SettingType.BOOL
+        ),
+        "highlight_max_color": se.Setting(
+            "Highlight max color",
+            "The color to use to highlight the facility with the most Unity Training partners.",
+            "#90EE90",
+            se.SettingType.COLOR
+        ),
+        "highlight_burst_color": se.Setting(
+            "Highlight burst color",
+            "The color to use to highlight facilities with a Spirit Explosion Unity Training partner(s).",
+            "#1777E0",
+            se.SettingType.COLOR
+        ),
+        "highlight_max_burst_color": se.Setting(
+            "Highlight max burst color",
+            "The color to use to highlight the facility with the most Spirit Explosion Unity Training partner(s).",
+            "#0070FF",
+            se.SettingType.COLOR
+        ),
+    }
+
+
+class UnityTrainingCountRow(hte.Row):
+    long_name = "Unity Training partner count"
+    short_name = "Unity<br>Training"
+    description = "[Scenario-specific] Shows the number of Unity Training partners on each facility."
+
+    def __init__(self):
+        super().__init__()
+        self.settings = UnityTrainingCountSettings()
+
+    def _generate_cells(self, game_state) -> list[hte.Cell]:
+        if list(game_state.values())[0]['scenario_id'] != 2:
+            return []
+
+        cells = [hte.Cell(self.short_name, title=self.description)]
+
+
+        highest_unity_partner_count = max(command['unity_partner_count'] for command in game_state.values())
+        highest_spirit_explosion_partner_count = max(command['spirit_explosion_partner_count'] for command in game_state.values())
+
+        for command in game_state.values():
+            bold = False
+            color = None
+            # Max highlight overrides default
+            if self.settings.highlight_max.value and highest_unity_partner_count > 0 and command['unity_partner_count'] == highest_unity_partner_count:
+                bold = True
+                color = self.settings.highlight_max_color.value
+            # spirit explosion overrides highlight
+            if command['spirit_explosion_partner_count'] > 0:
+                bold = True
+                color = self.settings.highlight_burst_color.value
+            # max spirit explosion overrides spirit explosion
+            if self.settings.highlight_max.value and highest_spirit_explosion_partner_count > 0 and command['spirit_explosion_partner_count'] == highest_spirit_explosion_partner_count:
+                bold = True
+                color = self.settings.highlight_max_burst_color.value
+            cells.append(hte.Cell(command['unity_partner_count'], bold=bold, color=color))
+
+        return cells
+
+
 class LArcStarGaugeGainSettings(se.NewSettings):
     _settings = {
         "highlight_max": se.Setting(
@@ -1184,6 +1252,7 @@ class RowTypes(Enum):
     PARTNER_COUNT = PartnerCountRow
     USEFUL_PARTNER_COUNT = UsefulPartnerCountRow
     RAINBOW_COUNT = RainbowCountRow
+    AOHARU_UNITY_PARTNER_COUNT = UnityTrainingCountRow
     GL_TOKENS = GrandLiveTokensDistributionRow
     GL_TOKENS_TOTAL = GrandLiveTotalTokensRow
     GM_FRAGMENTS = GrandMastersFragmentsRow
@@ -1209,6 +1278,9 @@ class DefaultPreset(hte.Preset):
         RowTypes.UAF_SPORT_POINT_GAIN,
         RowTypes.GFF_VEGETABLES,
         RowTypes.RMU_RESEARCH,
+        RowTypes.AOHARU_UNITY_PARTNER_COUNT,
+        RowTypes.DYI_POINTS_DIST,
+        RowTypes.ONSEN_POINTS_DIST,
         RowTypes.CURRENT_STATS,
         RowTypes.GAINED_STATS,
         RowTypes.USEFUL_BOND,
