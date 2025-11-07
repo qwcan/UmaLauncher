@@ -233,6 +233,13 @@ class HelperTable():
             for command in data['onsen_data_set']['command_info_array']:
                 all_commands[command['command_id']]['dig_info_array'] = command['dig_info_array']
 
+        # Aoharu
+        if 'team_data_set' in data:
+            for command in data['team_data_set']['command_info_array']:
+                all_commands[command['command_id']]['guide_event_partner_array'] = command['guide_event_partner_array']
+                all_commands[command['command_id']]['soul_event_partner_array'] = command['soul_event_partner_array']
+
+
         # Support Dict
         eval_dict = {
             eval_data['training_partner_id']: TrainingPartner(eval_data['training_partner_id'], eval_data['evaluation'], data['chara_info'])
@@ -358,7 +365,14 @@ class HelperTable():
 
                 bond_gains_total.append(training_partner.bond)
                 bond_gains_useful.append(training_partner.useful_bond)
-            
+
+            unity_partner_count = 0
+            spirit_explosion_partner_count = 0
+            for _ in command.get('guide_event_partner_array', []):
+                unity_partner_count += 1
+            for _ in command.get('soul_event_partner_array', []):
+                unity_partner_count += 1
+                spirit_explosion_partner_count += 1
 
             total_bond = sum(bond_gains_total)
             useful_bond = sum(bond_gains_useful)
@@ -521,6 +535,8 @@ class HelperTable():
                 'arc_aptitude_gain': arc_aptitude_gain,
                 'uaf_sport_gain': uaf_sport_gain,
                 'onsen_points_gain': onsen_points_gain,
+                'unity_partner_count': unity_partner_count,
+                'spirit_explosion_partner_count': spirit_explosion_partner_count,
             }
 
         # Simplify everything down to a dict with only the keys we care about.
