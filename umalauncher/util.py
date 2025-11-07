@@ -270,7 +270,9 @@ def show_error_box(error, message, custom_traceback=None):
     global ignore_errors
     if ignore_errors:
         return
-    
+
+    if traceback_str is None or traceback_str == "":
+        traceback_str = "Stacktrace: " + "".join(traceback.format_stack())
     gui.show_widget(
         gui.UmaErrorPopup,
         error,
