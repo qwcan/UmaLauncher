@@ -732,7 +732,7 @@ class UsefulUnityTrainingCountSettings(se.NewSettings):
 
 class UnityTrainingCountRow(hte.Row):
     long_name = "Unity Training partner count"
-    short_name = "Unity<br>Training"
+    short_name = "Unity"
     description = "[Scenario-specific] Shows the number of Unity Training partners on each facility."
 
     def __init__(self):
