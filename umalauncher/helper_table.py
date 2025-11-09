@@ -380,6 +380,7 @@ class HelperTable():
 
                     unity_partner_count += 1
                 for _ in command.get('soul_event_partner_array', []):
+                    # TODO: Should a spirit burst parner be considered a useful partner?
                     unity_partner_count += 1
                     spirit_burst_partner_count += 1
 

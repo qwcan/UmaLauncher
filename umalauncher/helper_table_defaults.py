@@ -771,7 +771,7 @@ class UnityTrainingCountRow(hte.Row):
 class UsefulUnityTrainingCountRow(hte.Row):
     long_name = "Useful Unity Training partner count"
     short_name = "Useful Unity"
-    description = "[Scenario-specific] Shows the number of useful Unity Training partners on each facility."
+    description = "[Scenario-specific] Shows the number of useful Unity Training partners on each facility. Useful Unity Training partners are any that haven't already had a Spirit Burst."
 
     def __init__(self):
         super().__init__()
