@@ -689,13 +689,13 @@ class UnityTrainingCountSettings(se.NewSettings):
         ),
         "highlight_burst_color": se.Setting(
             "Highlight burst color",
-            "The color to use to highlight facilities with a Spirit Explosion Unity Training partner(s).",
+            "The color to use to highlight facilities with a Spirit Burst Unity Training partner(s).",
             "#1777E0",
             se.SettingType.COLOR
         ),
         "highlight_max_burst_color": se.Setting(
             "Highlight max burst color",
-            "The color to use to highlight the facility with the most Spirit Explosion Unity Training partner(s).",
+            "The color to use to highlight the facility with the most Spirit Burst Unity Training partner(s).",
             "#0070FF",
             se.SettingType.COLOR
         ),
@@ -717,13 +717,13 @@ class UsefulUnityTrainingCountSettings(se.NewSettings):
         ),
         "highlight_burst_color": se.Setting(
             "Highlight burst color",
-            "The color to use to highlight facilities with a Spirit Explosion Unity Training partner(s).",
+            "The color to use to highlight facilities with a Spirit Burst Unity Training partner(s).",
             "#1777E0",
             se.SettingType.COLOR
         ),
         "highlight_max_burst_color": se.Setting(
             "Highlight max burst color",
-            "The color to use to highlight the facility with the most Spirit Explosion Unity Training partner(s).",
+            "The color to use to highlight the facility with the most Spirit Burst Unity Training partner(s).",
             "#0070FF",
             se.SettingType.COLOR
         ),
@@ -747,7 +747,7 @@ class UnityTrainingCountRow(hte.Row):
 
 
         highest_unity_partner_count = max(command['unity_partner_count'] for command in game_state.values())
-        highest_spirit_explosion_partner_count = max(command['spirit_explosion_partner_count'] for command in game_state.values())
+        highest_spirit_burst_partner_count = max(command['spirit_burst_partner_count'] for command in game_state.values())
 
         for command in game_state.values():
             bold = False
@@ -756,12 +756,12 @@ class UnityTrainingCountRow(hte.Row):
             if self.settings.highlight_max.value and highest_unity_partner_count > 0 and command['unity_partner_count'] == highest_unity_partner_count:
                 bold = True
                 color = self.settings.highlight_max_color.value
-            # spirit explosion overrides highlight
-            if command['spirit_explosion_partner_count'] > 0:
+            # spirit burst overrides highlight
+            if command['spirit_burst_partner_count'] > 0:
                 bold = True
                 color = self.settings.highlight_burst_color.value
-            # max spirit explosion overrides spirit explosion
-            if self.settings.highlight_max.value and highest_spirit_explosion_partner_count > 0 and command['spirit_explosion_partner_count'] == highest_spirit_explosion_partner_count:
+            # max spirit burst overrides spirit burst
+            if self.settings.highlight_max.value and highest_spirit_burst_partner_count > 0 and command['spirit_burst_partner_count'] == highest_spirit_burst_partner_count:
                 bold = True
                 color = self.settings.highlight_max_burst_color.value
             cells.append(hte.Cell(command['unity_partner_count'], bold=bold, color=color))
@@ -785,7 +785,7 @@ class UsefulUnityTrainingCountRow(hte.Row):
 
 
         highest_unity_partner_count = max(command['useful_unity_partner_count'] for command in game_state.values())
-        highest_spirit_explosion_partner_count = max(command['spirit_explosion_partner_count'] for command in game_state.values())
+        highest_spirit_burst_partner_count = max(command['spirit_burst_partner_count'] for command in game_state.values())
 
         for command in game_state.values():
             bold = False
@@ -794,12 +794,12 @@ class UsefulUnityTrainingCountRow(hte.Row):
             if self.settings.highlight_max.value and highest_unity_partner_count > 0 and command['useful_unity_partner_count'] == highest_unity_partner_count:
                 bold = True
                 color = self.settings.highlight_max_color.value
-            # spirit explosion overrides highlight
-            if command['spirit_explosion_partner_count'] > 0:
+            # spirit burst overrides highlight
+            if command['spirit_burst_partner_count'] > 0:
                 bold = True
                 color = self.settings.highlight_burst_color.value
-            # max spirit explosion overrides spirit explosion
-            if self.settings.highlight_max.value and highest_spirit_explosion_partner_count > 0 and command['spirit_explosion_partner_count'] == highest_spirit_explosion_partner_count:
+            # max spirit burst overrides spirit burst
+            if self.settings.highlight_max.value and highest_spirit_burst_partner_count > 0 and command['spirit_burst_partner_count'] == highest_spirit_burst_partner_count:
                 bold = True
                 color = self.settings.highlight_max_burst_color.value
             cells.append(hte.Cell(command['useful_unity_partner_count'], bold=bold, color=color))
