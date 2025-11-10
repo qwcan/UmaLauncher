@@ -692,7 +692,7 @@ class HintCountSettings(se.NewSettings):
 
 class HintCountRow(hte.Row):
     long_name = "Skill hint count"
-    short_name = "Skill hints"
+    short_name = "Skill Hints"
     description = "Shows the total number of skill hints available at each facility."
 
     def __init__(self):
