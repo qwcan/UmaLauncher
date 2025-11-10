@@ -1357,6 +1357,7 @@ class RowTypes(Enum):
     LEVEL = LevelRow
     PARTNER_COUNT = PartnerCountRow
     USEFUL_PARTNER_COUNT = UsefulPartnerCountRow
+    SKILL_HINT_COUNT = HintCountRow
     RAINBOW_COUNT = RainbowCountRow
     AOHARU_USEFUL_UNITY_PARTNER_COUNT = UsefulUnityTrainingCountRow
     AOHARU_UNITY_PARTNER_COUNT = UnityTrainingCountRow
