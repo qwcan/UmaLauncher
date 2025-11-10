@@ -331,6 +331,7 @@ class HelperTable():
             bond_gains_useful = [0]
             partner_count = 0
             useful_partner_count = 0
+            num_hints = len(command.get('tips_event_partner_array', []))
             for training_partner_id in command.get('training_partner_array', []):
                 partner_count += 1
 
@@ -534,6 +535,7 @@ class HelperTable():
                 'failure_rate': failure_rate,
                 'gained_stats': gained_stats,
                 'gained_skillpt': gained_skillpt,
+                'num_hints': num_hints,
                 'total_bond': total_bond,
                 'useful_bond': useful_bond,
                 'gained_energy': gained_energy,
