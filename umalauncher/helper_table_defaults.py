@@ -673,6 +673,46 @@ class UsefulPartnerCountRow(hte.Row):
         return cells
 
 
+class HintCountSettings(se.NewSettings):
+    _settings = {
+        "highlight_max": se.Setting(
+            "Highlight max",
+            "Highlights the facility with the most skill hints available.",
+            True,
+            se.SettingType.BOOL
+        ),
+        "highlight_max_color": se.Setting(
+            "Highlight max color",
+            "The color to use to highlight the facility with the most skill hints available.",
+            "#90EE90",
+            se.SettingType.COLOR
+        ),
+    }
+
+
+class HintCountRow(hte.Row):
+    long_name = "Skill hint count"
+    short_name = "Skill Hints"
+    description = "Shows the total number of skill hints available at each facility."
+
+    def __init__(self):
+        super().__init__()
+        self.settings = HintCountSettings()
+
+    def _generate_cells(self, game_state) -> list[hte.Cell]:
+        cells = [hte.Cell(self.short_name, title=self.description)]
+
+        highest_hint_count = max(command['num_hints'] for command in game_state.values())
+
+        for command in game_state.values():
+            if self.settings.highlight_max.value and highest_hint_count > 0 and command['num_hints'] == highest_hint_count:
+                cells.append(hte.Cell(command['num_hints'], bold=True, color=self.settings.highlight_max_color.value))
+            else:
+                cells.append(hte.Cell(command['num_hints']))
+
+        return cells
+
+
 class UnityTrainingCountSettings(se.NewSettings):
     _settings = {
         "highlight_max": se.Setting(
@@ -1317,6 +1357,7 @@ class RowTypes(Enum):
     LEVEL = LevelRow
     PARTNER_COUNT = PartnerCountRow
     USEFUL_PARTNER_COUNT = UsefulPartnerCountRow
+    SKILL_HINT_COUNT = HintCountRow
     RAINBOW_COUNT = RainbowCountRow
     AOHARU_USEFUL_UNITY_PARTNER_COUNT = UsefulUnityTrainingCountRow
     AOHARU_UNITY_PARTNER_COUNT = UnityTrainingCountRow
