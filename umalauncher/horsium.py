@@ -9,6 +9,10 @@ import time
 import threading
 from urllib.parse import urlparse
 from subprocess import CREATE_NO_WINDOW
+
+import psutil
+import win32con
+import win32gui
 from loguru import logger
 from selenium.common.exceptions import WebDriverException
 from selenium import webdriver
@@ -249,6 +253,42 @@ class BrowserWindow:
 
             util.show_warning_box("Uma Launcher: Unable to reach browser.", f"Webbrowser is unable to open.<br><br>If this problem persists, try restarting your computer<br>or selecting a different browser in the preferences.<br><br>Extra info:<br>{self.latest_error}")
         return wrapper
+
+    def get_browser_pid(self):
+        if 'moz:processID' in self.driver.capabilities:
+            return self.driver.capabilities['moz:processID']
+        else:
+            for process in psutil.process_iter():
+                try:
+                    if (process.name() == 'chrome.exe' or process.name() == 'msedge.exe' or process.name() == 'chromium.exe') and '--test-type=webdriver' in process.cmdline():
+                        # Look for the top-level browser process only (it's what has the window)
+                        if process.parent().name() != 'chrome.exe'and process.parent().name() != 'msedge.exe' and process.parent().name() != 'chromium.exe':
+                            return process.pid
+                except Exception as e:
+                    logger.warning( "Error getting browser PID:" )
+                    logger.warning(traceback.format_exc())
+            logger.warning("Could not get browser PID!")
+            return None
+
+    # TODO: It'd be nice to be able to do this without resorting to the win32 API
+    def set_topmost(self, is_topmost):
+        hwnd = util.get_window_handle_from_pid( self.get_browser_pid() )
+        if hwnd is None:
+            logger.error("Could not find window handle for browser PID.")
+            return
+        rect = util.get_window_rect(hwnd)
+        logger.info(f"Window rect: {rect}")
+        resized = ( rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1] )
+        # GetWindowRect returns (left, top, right, bottom), but we want (x, y, width, height)
+        logger.info(f"Window resized: {resized}")
+        # TODO does this need flags?
+        if is_topmost:
+            logger.info( "Enabling always on top")
+            win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1], 0)
+        else:
+            logger.info( "Disabling always on top")
+            win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1], 0)
+        self.settings["browser_topmost"] = is_topmost
 
     @ensure_focus
     def execute_script(self, *args, **kwargs):
