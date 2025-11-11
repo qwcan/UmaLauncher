@@ -351,6 +351,13 @@ def _get_window_by_executable(hwnd: int, query: str):
             logger.debug(f"Found window {query}!")
             window_handle = hwnd
 
+def _get_window_by_pid( hwnd: int, pid: int):
+    global window_handle
+    if win32gui.IsWindowVisible(hwnd):
+        proc_pid = win32process.GetWindowThreadProcessId(hwnd)[1]
+        if proc_pid == pid:
+            logger.debug(f"Found window with PID {pid}!")
+            window_handle = hwnd
 
 LAZY = _get_window_lazy
 EXACT = _get_window_exact
@@ -362,6 +369,12 @@ def get_window_handle(query: str, type=LAZY) -> str:
 
     window_handle = None
     win32gui.EnumWindows(type, query)
+    return window_handle
+
+def get_window_handle_from_pid( pid: int ) -> str:
+    global window_handle
+    window_handle = None
+    win32gui.EnumWindows( _get_window_by_pid, pid )
     return window_handle
 
 def get_game_handle():

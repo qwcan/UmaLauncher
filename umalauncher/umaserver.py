@@ -48,6 +48,17 @@ def skills_window_rect():
 
     return '', 200
 
+@app.route('/topmost', methods=['POST'])
+def topmost():
+    global threader
+    # Json is sent as text/plain in body.
+    json_data = json.loads(request.data.decode('utf-8'))
+
+    if threader.carrotjuicer:
+        threader.carrotjuicer.set_browser_topmost(json_data)
+    return '', 200
+
+
 
 # Patcher-related
 @app.route("/patcher-start", methods=['POST'])

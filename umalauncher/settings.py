@@ -128,6 +128,13 @@ class DefaultSettings(se.NewSettings):
             se.SettingType.XYWHSPINBOXES,
             tab="Position"
         ),
+        "browser_topmost": se.Setting(
+            "Browser always on top",
+            "Whether the browser window should be always on top.",
+            False,
+            se.SettingType.BOOL,
+            tab="Position"
+        ),
         "skills_position": se.Setting(
             "Skills browser position",
             "Position of the skills browser window.",
