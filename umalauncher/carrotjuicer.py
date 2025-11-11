@@ -297,12 +297,14 @@ class CarrotJuicer:
 
             # Close whatever popup is open
             if self.browser and self.browser.alive():
-                self.browser.execute_script(
-                    # Janky way to get open event popups
-                    """
-                    document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-'][aria-expanded=true], div[class^='compatibility_result_box_'] button[class^='sc-'][aria-expanded=true]").forEach(e => { e.click()});
-                    """
-                )
+                # Don't close event popups if the response is the choice outcomes
+                if "choice_reward_array" not in data:
+                    self.browser.execute_script(
+                        # Janky way to get open event popups
+                        """
+                        document.querySelectorAll("div[id^='event-viewer-'] button[class^='sc-'][aria-expanded=true], div[class^='compatibility_result_box_'] button[class^='sc-'][aria-expanded=true]").forEach(e => { e.click()});
+                        """
+                    )
                 gametora_close_ad_banner(self.browser)
 
             # Run ended
