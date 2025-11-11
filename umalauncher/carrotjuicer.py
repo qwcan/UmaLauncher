@@ -204,7 +204,8 @@ class CarrotJuicer:
 
     def save_last_browser_rect(self):
         self.save_rect(self.last_browser_rect, "browser_position")
-        self.threader.settings["browser_topmost"] = self.browser_topmost
+        if self.threader.settings["browser_topmost"] != self.browser_topmost:
+            self.threader.settings["browser_topmost"] = self.browser_topmost
     
     def save_skill_window_rect(self):
         if self.skill_browser:
