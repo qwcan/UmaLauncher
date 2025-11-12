@@ -277,10 +277,7 @@ class BrowserWindow:
             logger.error("Could not find window handle for browser PID.")
             return
         rect = util.get_window_rect(hwnd)
-        logger.info(f"Window rect: {rect}")
-        resized = ( rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1] )
         # GetWindowRect returns (left, top, right, bottom), but we want (x, y, width, height)
-        logger.info(f"Window resized: {resized}")
         # TODO does this need flags?
         if is_topmost:
             logger.info( "Enabling always on top")
