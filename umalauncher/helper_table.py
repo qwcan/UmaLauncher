@@ -157,6 +157,8 @@ class HelperTable():
         arc_expectation_gauge = 0
         arc_supporter_points = 0
 
+        hint_partners = []
+
         command_info = {}
 
         all_commands = {}
@@ -332,6 +334,8 @@ class HelperTable():
             partner_count = 0
             useful_partner_count = 0
             num_hints = len(command.get('tips_event_partner_array', []))
+            if num_hints:
+                hint_partners += command.get('tips_event_partner_array')
             for training_partner_id in command.get('training_partner_array', []):
                 partner_count += 1
 
@@ -725,6 +729,7 @@ class HelperTable():
             "scheduled_races": scheduled_races,
             "gm_fragments": gm_fragments,
             "gl_stats": gl_stats,
+            "hint_partners": hint_partners,
             "arc_aptitude_points": arc_aptitude_points,
             "arc_expectation_gauge": arc_expectation_gauge,
             "arc_supporter_points": arc_supporter_points,
