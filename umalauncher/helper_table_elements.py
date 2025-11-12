@@ -361,6 +361,7 @@ class Preset():
                 bond_color = color
 
             img = f"<img src=\"{partner.img}\" width=\"56\" height=\"56\" style=\"display:inline-block;\"/>"
+            hint_icon = """<div style="position:absolute;right:0px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#ff6b8f,#ff3b6f);color:#fff;font-weight:700;font-size:14px;line-height:20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.3);z-index:10;pointer-events:none;transform: rotate(20deg);">!</div>"""
             bond_ele = ""
             if display_type in (2, 3):
                 # Bars
@@ -380,7 +381,7 @@ class Preset():
                 # Numbers
                 bond_ele += f"<p style=\"margin:0;padding:0;color:{bond_color};font-weight:bold;\">{partner.starting_bond}</p>"
             
-            ele = f"<div style=\"display:flex;flex-direction:column;align-items:center;gap:0.2rem;\">{img}{bond_ele}</div>"
+            ele = f"<div style=\"position:relative;display:flex;flex-direction:column;align-items:center;gap:0.2rem;\">{img}{hint_icon if id in main_info['hint_partners'] else ''}{bond_ele}</div>"
             partners.append(ele)
         
         inner = ''.join(partners)
