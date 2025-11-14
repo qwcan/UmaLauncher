@@ -167,6 +167,8 @@ class CarrotJuicer:
 
 
     def get_browser_reset_position(self):
+        if self.threader.windowmover.window is None:
+            return None
         game_rect, _ = self.threader.windowmover.window.get_rect()
         workspace_rect = self.threader.windowmover.window.get_workspace_rect()
         left_side = abs(workspace_rect[0] - game_rect[0])
