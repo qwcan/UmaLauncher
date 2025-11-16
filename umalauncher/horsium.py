@@ -80,8 +80,8 @@ def chromium_setup(service, options_class, driver_class, profile, helper_url, se
 
     options.add_argument(f"--user-data-dir={per_port_profile}")
     options.add_argument(f"--remote-debugging-port={port}")
-    options.add_experimental_option("useAutomationExtension", False)
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False) # Disable browser being controlled warning
+    options.add_experimental_option("excludeSwitches", ["enable-automation"]) # Disable browser being controlled warning
     options.add_argument("--disable-web-security") # Disable CORS protections
     
     if not settings['enable_browser_override']:
