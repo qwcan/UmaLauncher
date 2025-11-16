@@ -789,8 +789,7 @@ class CarrotJuicer:
                 if self.skill_browser:
                     if self.skill_browser.alive():
                         # Update skill window.
-                        # self.update_skill_window()
-                        pass
+                        self.update_skill_window()
                     else:
                         self.save_skill_window_rect()
 
