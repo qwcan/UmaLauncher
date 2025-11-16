@@ -22,8 +22,16 @@ from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.common.exceptions import NoSuchWindowException
 import util
+import socket
 
 OLD_DRIVERS = []
+
+def _is_port_open(port: int, host: str = "127.0.0.1", timeout: float = 0.15) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
 
 def firefox_setup(helper_url, settings):
     driver_path = None
@@ -53,16 +61,25 @@ def firefox_setup(helper_url, settings):
     browser.get(helper_url)
     return browser
 
-def chromium_setup(service, options_class, driver_class, profile, helper_url, settings, binary_path=None):
+def chromium_setup(service, options_class, driver_class, profile, helper_url, settings, binary_path=None, base_port=9222, max_port=9229):
     service.creation_flags = CREATE_NO_WINDOW
     options = options_class()
 
     if binary_path:
         options.binary_location = binary_path
 
-    options.add_argument("--user-data-dir=" + str(util.get_asset(profile)))
-    options.add_argument("--remote-debugging-port=9222")
-    options.add_argument("--new-window")
+    # Find first free port
+    for port in range(base_port, max_port):
+        if not _is_port_open(port):
+            break
+    else:
+        raise RuntimeError(f"No free debug port available between {base_port} and {max_port}")
+
+    # Use per-port profile folder to avoid conflicts if same profile used multiple times
+    per_port_profile = profile + f"_p{port}"
+
+    options.add_argument(f"--user-data-dir={per_port_profile}")
+    options.add_argument(f"--remote-debugging-port={port}")
     options.add_argument("--disable-web-security") # Disable CORS protections
     
     if not settings['enable_browser_override']:
@@ -73,6 +90,8 @@ def chromium_setup(service, options_class, driver_class, profile, helper_url, se
     if settings['enable_browser_override']:
         browser.get(helper_url)
 
+
+    logger.debug(f"Chromium started on debug port {port} using profile {per_port_profile}")
     return browser
 
 def chrome_setup(helper_url, settings):

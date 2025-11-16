@@ -789,8 +789,7 @@ class CarrotJuicer:
                 if self.skill_browser:
                     if self.skill_browser.alive():
                         # Update skill window.
-                        # self.update_skill_window()
-                        pass
+                        self.update_skill_window()
                     else:
                         self.save_skill_window_rect()
 
@@ -1187,21 +1186,22 @@ def gametora_close_ad_banner(browser: horsium.BrowserWindow):
             }
             """)
 
-    # Close the top support cards thing, super jank
-    browser.execute_script("""
-                    let a = document.querySelector("[id^='styles_page-main_']");
-                    if( a != null ){
-                        let b = a.children[1]; //First element is top ad
-                        if( b != null )
-                        {
-                            let c = b.children[b.childElementCount - 1]; //Last element is the support cards thing
-                            if( c != null )
+    if 'training-event-helper' in browser.url:
+        # Close the top support cards thing, super jank
+        browser.execute_script("""
+                        let a = document.querySelector("[id^='styles_page-main_']");
+                        if( a != null ){
+                            let b = a.children[1]; //First element is top ad
+                            if( b != null )
                             {
-                                c.style.display = "none";
+                                let c = b.children[b.childElementCount - 1]; //Last element is the support cards thing
+                                if( c != null )
+                                {
+                                    c.style.display = "none";
+                                }
                             }
                         }
-                    }
-                    """)
+                        """)
 
 
 
