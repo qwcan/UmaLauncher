@@ -9,6 +9,7 @@ from datetime import datetime
 from inspect import trace
 
 import msgpack
+import select
 from loguru import logger
 from msgpack import Unpacker
 from selenium.common.exceptions import NoSuchWindowException
@@ -789,8 +790,7 @@ class CarrotJuicer:
                 if self.skill_browser:
                     if self.skill_browser.alive():
                         # Update skill window.
-                        # self.update_skill_window()
-                        pass
+                        self.update_skill_window()
                     else:
                         self.save_skill_window_rect()
 
@@ -811,8 +811,14 @@ class CarrotJuicer:
                 else:
                     logger.debug("Waiting for message...")
                     try:
-                        message = self.sock.recv(self.MAX_BUFFER_SIZE)
-                        logger.debug(f"Received {len(message)} bytes of data")
+                        ready = select.select([self.sock], [], [], 0.5)
+                        if ready[0]:
+                            message = self.sock.recv(self.MAX_BUFFER_SIZE)
+                            logger.debug(f"Received {len(message)} bytes of data")
+                        else:
+                            # No data available, keep waiting
+                            # TODO: is there a better way to do this than busy waiting?
+                            continue
                     except Exception as e:
                         #TODO: kill the socket in a "good" way that doesn't throw an exception here
                         logger.error(f"Socket interrupted: {e}\n{traceback.format_exc()}")
@@ -1187,21 +1193,22 @@ def gametora_close_ad_banner(browser: horsium.BrowserWindow):
             }
             """)
 
-    # Close the top support cards thing, super jank
-    browser.execute_script("""
-                    let a = document.querySelector("[id^='styles_page-main_']");
-                    if( a != null ){
-                        let b = a.children[1]; //First element is top ad
-                        if( b != null )
-                        {
-                            let c = b.children[b.childElementCount - 1]; //Last element is the support cards thing
-                            if( c != null )
+    if 'training-event-helper' in browser.url:
+        # Close the top support cards thing, super jank
+        browser.execute_script("""
+                        let a = document.querySelector("[id^='styles_page-main_']");
+                        if( a != null ){
+                            let b = a.children[1]; //First element is top ad
+                            if( b != null )
                             {
-                                c.style.display = "none";
+                                let c = b.children[b.childElementCount - 1]; //Last element is the support cards thing
+                                if( c != null )
+                                {
+                                    c.style.display = "none";
+                                }
                             }
                         }
-                    }
-                    """)
+                        """)
 
 
 
