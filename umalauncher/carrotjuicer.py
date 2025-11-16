@@ -9,6 +9,7 @@ from datetime import datetime
 from inspect import trace
 
 import msgpack
+import select
 from loguru import logger
 from msgpack import Unpacker
 from selenium.common.exceptions import NoSuchWindowException
@@ -810,8 +811,14 @@ class CarrotJuicer:
                 else:
                     logger.debug("Waiting for message...")
                     try:
-                        message = self.sock.recv(self.MAX_BUFFER_SIZE)
-                        logger.debug(f"Received {len(message)} bytes of data")
+                        ready = select.select([self.sock], [], [], 0.5)
+                        if ready[0]:
+                            message = self.sock.recv(self.MAX_BUFFER_SIZE)
+                            logger.debug(f"Received {len(message)} bytes of data")
+                        else:
+                            # No data available, keep waiting
+                            # TODO: is there a better way to do this than busy waiting?
+                            continue
                     except Exception as e:
                         #TODO: kill the socket in a "good" way that doesn't throw an exception here
                         logger.error(f"Socket interrupted: {e}\n{traceback.format_exc()}")
