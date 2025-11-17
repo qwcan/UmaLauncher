@@ -283,10 +283,8 @@ class BrowserWindow:
             for process in psutil.process_iter():
                 try:
                     if process.name() == 'chrome.exe' and f'--app={self.url}' in process.cmdline():
-                        print(self.url)
                         return process.pid
                     elif process.name() in ('msedge.exe', 'chromium.exe') and '--test-type=webdriver' in process.cmdline():
-                        print(1)
                         # Look for the top-level browser process only (it's what has the window)
                         if process.parent().name() != 'msedge.exe' and process.parent().name() != 'chromium.exe':
                             return process.pid
