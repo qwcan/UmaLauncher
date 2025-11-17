@@ -259,7 +259,7 @@ class BrowserWindow:
             self.driver.set_window_rect(self.last_window_rect['x'], self.last_window_rect['y'], self.last_window_rect['width'], self.last_window_rect['height'])
         if self.run_at_launch is not None:
             self.run_at_launch(self)
-        self.set_topmost( self.settings["browser_topmost"] )
+        # self.set_topmost(self.settings["browser_topmost"])
 
     def ensure_focus(func):
         def wrapper(self, *args, **kwargs):
