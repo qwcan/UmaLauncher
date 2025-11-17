@@ -3,7 +3,7 @@
 # and, in the case of multiple windows, which one is the one we want to use
 # Each open window will be an instance of a custom class.
 # Interacting with the browser will be done through this class.
-
+import os
 import traceback
 import time
 import threading
@@ -246,8 +246,13 @@ class BrowserWindow:
             OLD_DRIVERS.append(self.driver)
 
         self.driver = self.init_browser()
-    
-        if not self.driver or not self.driver.window_handles:
+
+        try:
+            if not self.driver or not self.driver.window_handles:
+                return
+        except WebDriverException as e:
+            logger.error("Failed to get window handles")
+            logger.error(traceback.format_exc())
             return
 
         self.active_tab_handle = self.driver.window_handles[0]
@@ -283,14 +288,27 @@ class BrowserWindow:
         if 'moz:processID' in self.driver.capabilities:
             return self.driver.capabilities['moz:processID']
         else:
+            browsers = ['chrome.exe', 'msedge.exe', 'chromium.exe']
+            if self.settings['enable_browser_override'] and self.settings['browser_custom_binary']:
+                browsers.append( os.path.basename(self.settings['browser_custom_binary'])  )
+            # Chromium-based (chrome/edge) browsers should be launched with the --app= flag.
+            # The app flag isn't passed to custom browser binaries, so we check for that later
             for process in psutil.process_iter():
                 try:
-                    if process.name() == 'chrome.exe' and f'--app={self.url}' in process.cmdline():
-                        return process.pid
-                    elif process.name() in ('msedge.exe', 'chromium.exe') and '--test-type=webdriver' in process.cmdline():
-                        # Look for the top-level browser process only (it's what has the window)
-                        if process.parent().name() != 'msedge.exe' and process.parent().name() != 'chromium.exe':
+                    if process.name() in browsers:
+                        if f'--app={self.url}' in process.cmdline():
                             return process.pid
+                except Exception as e:
+                    logger.warning( "Error getting browser PID:" )
+                    logger.warning(traceback.format_exc())
+            # If we didn't find a process with the --app= flag (likely a custom browser binary), try to find it by looking for the webdriver flag
+            for process in psutil.process_iter():
+                try:
+                    if (process.name() in browsers
+                        and '--test-type=webdriver' in process.cmdline()
+                        and process.parent().name() not in browsers):
+                        # Look for the top-level browser process only (it's what has the window)
+                        return process.pid
                 except Exception as e:
                     logger.warning( "Error getting browser PID:" )
                     logger.warning(traceback.format_exc())
