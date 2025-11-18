@@ -14,7 +14,7 @@ pyinstaller~=6.16.0
 pypresence~=4.3.0
 PyQt5~=5.15.11
 pystray~=0.19.5
-pywin32==310
+pywin32==311
 requests~=2.32.4
 selenium~=4.38.0
 SteamPathFinder==0.0.5
