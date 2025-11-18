@@ -674,9 +674,6 @@ class HelperTable():
                     harvest_info['img'] = veg_dict['img']
                 command_info[constants.COMMAND_ID_TO_KEY[command_id]]['material_harvest_info_array'] = cur_harvest_info
 
-        print(f"{gff_vegetables}")
-            
-
         # Run! Mecha Umamusume
         if 'mecha_data_set' in data:
             mecha_data = data['mecha_data_set']

@@ -162,9 +162,7 @@ class CarrotJuicer:
             start_pos = self.get_browser_reset_position()
         
         self.browser = horsium.BrowserWindow(self.helper_url, self.threader, rect=start_pos, run_at_launch=setup_helper_page)
-        self.browser_topmost = topmost
-        if topmost:
-            self.browser.set_topmost(True)
+        self.set_browser_topmost(topmost)
 
 
     def get_browser_reset_position(self):
@@ -790,7 +788,8 @@ class CarrotJuicer:
                 if self.skill_browser:
                     if self.skill_browser.alive():
                         # Update skill window.
-                        self.update_skill_window()
+                        # self.update_skill_window()
+                        pass
                     else:
                         self.save_skill_window_rect()
 

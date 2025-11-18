@@ -3,7 +3,7 @@
 # and, in the case of multiple windows, which one is the one we want to use
 # Each open window will be an instance of a custom class.
 # Interacting with the browser will be done through this class.
-
+import os
 import traceback
 import time
 import threading
@@ -80,6 +80,8 @@ def chromium_setup(service, options_class, driver_class, profile, helper_url, se
 
     options.add_argument(f"--user-data-dir={per_port_profile}")
     options.add_argument(f"--remote-debugging-port={port}")
+    options.add_experimental_option("useAutomationExtension", False) # Disable browser being controlled warning
+    options.add_experimental_option("excludeSwitches", ["enable-automation"]) # Disable browser being controlled warning
     options.add_argument("--disable-web-security") # Disable CORS protections
     
     if not settings['enable_browser_override']:
@@ -244,8 +246,13 @@ class BrowserWindow:
             OLD_DRIVERS.append(self.driver)
 
         self.driver = self.init_browser()
-    
-        if not self.driver or not self.driver.window_handles:
+
+        try:
+            if not self.driver or not self.driver.window_handles:
+                return
+        except WebDriverException as e:
+            logger.error("Failed to get window handles")
+            logger.error(traceback.format_exc())
             return
 
         self.active_tab_handle = self.driver.window_handles[0]
@@ -259,7 +266,10 @@ class BrowserWindow:
             self.driver.set_window_rect(self.last_window_rect['x'], self.last_window_rect['y'], self.last_window_rect['width'], self.last_window_rect['height'])
         if self.run_at_launch is not None:
             self.run_at_launch(self)
-        self.set_topmost( self.settings["browser_topmost"] )
+
+        # only want to do this for the training-event-helper
+        if 'training-event-helper' in self.url:
+            self.set_topmost(self.settings["browser_topmost"])
 
     def ensure_focus(func):
         def wrapper(self, *args, **kwargs):
@@ -278,12 +288,27 @@ class BrowserWindow:
         if 'moz:processID' in self.driver.capabilities:
             return self.driver.capabilities['moz:processID']
         else:
+            browsers = ['chrome.exe', 'msedge.exe', 'chromium.exe']
+            if self.settings['enable_browser_override'] and self.settings['browser_custom_binary']:
+                browsers.append( os.path.basename(self.settings['browser_custom_binary'])  )
+            # Chromium-based (chrome/edge) browsers should be launched with the --app= flag.
+            # The app flag isn't passed to custom browser binaries, so we check for that later
             for process in psutil.process_iter():
                 try:
-                    if (process.name() == 'chrome.exe' or process.name() == 'msedge.exe' or process.name() == 'chromium.exe') and '--test-type=webdriver' in process.cmdline():
-                        # Look for the top-level browser process only (it's what has the window)
-                        if process.parent().name() != 'chrome.exe'and process.parent().name() != 'msedge.exe' and process.parent().name() != 'chromium.exe':
+                    if process.name() in browsers:
+                        if f'--app={self.url}' in process.cmdline():
                             return process.pid
+                except Exception as e:
+                    logger.warning( "Error getting browser PID:" )
+                    logger.warning(traceback.format_exc())
+            # If we didn't find a process with the --app= flag (likely a custom browser binary), try to find it by looking for the webdriver flag
+            for process in psutil.process_iter():
+                try:
+                    if (process.name() in browsers
+                        and '--test-type=webdriver' in process.cmdline()
+                        and process.parent().name() not in browsers):
+                        # Look for the top-level browser process only (it's what has the window)
+                        return process.pid
                 except Exception as e:
                     logger.warning( "Error getting browser PID:" )
                     logger.warning(traceback.format_exc())
