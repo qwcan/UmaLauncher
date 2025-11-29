@@ -167,7 +167,7 @@ class CarrotJuicer:
 
     def get_browser_reset_position(self):
         if self.threader.windowmover.window is None:
-            return None
+            return [0, 0, 720, 480]
         game_rect, _ = self.threader.windowmover.window.get_rect()
         workspace_rect = self.threader.windowmover.window.get_workspace_rect()
         left_side = abs(workspace_rect[0] - game_rect[0])
@@ -178,7 +178,18 @@ class CarrotJuicer:
         else:
             left_x = game_rect[2] + 5
             width = right_side
-        return [left_x, workspace_rect[1], width, workspace_rect[3] - workspace_rect[1] + 6]
+        height = workspace_rect[3] - workspace_rect[1] + 6
+        # Enforce a 100-pixel minimum width and height
+        if width < 100:
+            width = 100
+        if height < 100:
+            height = 100
+        rect = [left_x, workspace_rect[1], width, height]
+        if util.rect_is_onscreen( rect ):
+            return rect
+        else:
+            return util.move_rect_to_screen(rect)
+
 
 
     def close_browser(self):
@@ -190,6 +201,7 @@ class CarrotJuicer:
 
     def save_rect(self, rect_var, setting):
         if rect_var:
+            #TODO: actually check window dimensions
             if (rect_var['x'] == -32000 and rect_var['y'] == -32000):
                 logger.warning(f"Browser minimized, cannot save position for {setting}: {rect_var}")
                 rect_var = None

@@ -442,6 +442,55 @@ def monitor_from_window(*args, **kwargs):
     except pywinerror:
         return None
 
+def get_monitor_from_point(*args, **kwargs):
+    try:
+        return win32api.MonitorFromPoint(*args, **kwargs)
+    except pywinerror:
+        return None
+    
+def rect_is_onscreen(rect):
+    top_left = (rect[0], rect[1])
+    top_right = (rect[0] + rect[2], rect[1])
+    bottom_left = (rect[0], rect[1] + rect[3])
+    bottom_right = (rect[0] + rect[2], rect[1] + rect[3])
+    return get_monitor_from_point(top_left) is not None \
+        and get_monitor_from_point(top_right) is not None \
+        and get_monitor_from_point(bottom_left) is not None \
+        and get_monitor_from_point(bottom_right)
+
+def move_rect_to_screen(rect):
+    if rect_is_onscreen(rect):
+        return rect
+
+    #TODO: this is nasty AI-generated code that I haven't looked at too closely
+
+    # Get closest monitor for top-left corner
+    monitor = get_monitor_from_point((rect[0], rect[1]))
+    if monitor is None:
+        # Try top-right corner
+        monitor = get_monitor_from_point((rect[0] + rect[2], rect[1]))
+
+    if monitor is None:
+        # Both top corners are offscreen, move them onscreen
+        monitor = get_monitor_from_point((rect[0], rect[1]), win32con.MONITOR_DEFAULTTONEAREST)
+        monitor_info = get_monitor_info(monitor)
+        if not monitor_info:
+            logger.error("Cannot get monitor info.")
+            # raise Exception("Cannot get monitor info.")
+            monitor_info = {"Work": (0, 0, 1920, 1080)}
+        work_area = monitor_info.get("Work")
+
+        # Calculate new position while preserving dimensions
+        new_x = max(work_area[0], min(work_area[2] - rect[2], rect[0]))
+        new_y = max(work_area[1], min(work_area[3] - rect[3], rect[1]))
+
+        return [new_x, new_y, rect[2], rect[3]]
+    else:
+        # Both top corners are onscreen, should be visible
+        return rect
+
+
+
 def get_monitor_info(*args, **kwargs):
     try:
         return win32api.GetMonitorInfo(*args, **kwargs)
