@@ -285,7 +285,7 @@ class BrowserWindow:
         return wrapper
 
     def get_browser_pid(self):
-        if 'moz:processID' in self.driver.capabilities:
+        if self.driver is not None and 'moz:processID' in self.driver.capabilities:
             return self.driver.capabilities['moz:processID']
         else:
             browsers = ['chrome.exe', 'msedge.exe', 'chromium.exe']
