@@ -500,9 +500,7 @@ class CarrotJuicer:
 
                     # Check to see if you already have the status.
                     status_ids = data['chara_info']['chara_effect_id_array']
-                    print(status_ids)
                     if status_ids:
-                        print([self.status_name_dict[i] for i in status_ids if i in self.status_name_dict])
                         self.browser.execute_script("""
                         arguments[0].parentElement.querySelectorAll('div[data-tippy-root] span[class^="utils_linkcolor"]')
                             .forEach(el => {
