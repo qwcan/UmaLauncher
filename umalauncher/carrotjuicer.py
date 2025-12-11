@@ -502,12 +502,15 @@ class CarrotJuicer:
                     status_ids = data['chara_info']['chara_effect_id_array']
                     if status_ids:
                         self.browser.execute_script("""
-                        arguments[0].parentElement.querySelectorAll('div[data-tippy-root] span[class^="utils_linkcolor"]')
-                            .forEach(el => {
-                                if (arguments[1].includes(el.textContent.trim())) {
-                                    el.style.color = 'gray';
-                                }
-                            });
+                        if(arguments[0])
+                        {
+                            arguments[0].parentElement.querySelectorAll('div[data-tippy-root] span[class^="utils_linkcolor"]')
+                                .forEach(el => {
+                                    if (arguments[1].includes(el.textContent.trim())) {
+                                        el.style.color = 'gray';
+                                    }
+                                });
+                        } 
                         """, event_element, [self.status_name_dict[i] for i in status_ids if i in self.status_name_dict])
 
             if 'reserved_race_array' in data and 'chara_info' not in data and self.last_helper_data:
