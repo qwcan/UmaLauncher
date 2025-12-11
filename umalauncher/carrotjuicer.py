@@ -71,6 +71,7 @@ class CarrotJuicer:
         self.start_time = 0
 
         self.skill_id_dict = mdb.get_skill_id_dict()
+        self.status_name_dict = mdb.get_status_name_dict()
 
         self.screen_state_handler = threader.screenstate
         self.restart_time()
@@ -497,6 +498,17 @@ class CarrotJuicer:
                         event_element
                     )
 
+                    # Check to see if you already have the status.
+                    status_ids = data['chara_info']['chara_effect_id_array']
+                    if status_ids:
+                        self.browser.execute_script("""
+                        arguments[0].parentElement.querySelectorAll('div[data-tippy-root] span[class^="utils_linkcolor"]')
+                            .forEach(el => {
+                                if (arguments[1].includes(el.textContent.trim())) {
+                                    el.style.color = 'gray';
+                                }
+                            });
+                        """, event_element, [self.status_name_dict[i] for i in status_ids if i in self.status_name_dict])
 
             if 'reserved_race_array' in data and 'chara_info' not in data and self.last_helper_data:
                 # User changed reserved races
@@ -997,7 +1009,6 @@ def setup_helper_page(browser: horsium.BrowserWindow):
         window.UL_DATA.expanded = true;
 
         var height = window.UL_OVERLAY.offsetHeight;
-        console.log(height)
         window.OVERLAY_HEIGHT = height + "px";
 
         document.getElementById("ul-dropdown").textContent = "⯅";
