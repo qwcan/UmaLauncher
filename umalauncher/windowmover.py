@@ -1,5 +1,7 @@
 import os
 import time
+
+import win32con
 from loguru import logger
 import util
 import win32gui
@@ -45,8 +47,27 @@ class GameWindow():
 
         return success
 
+    def is_window_onscreen(self):
+        return util.monitor_from_window(self.handle, win32con.MONITOR_DEFAULTTONULL) is not None
+
+    def move_window_onscreen(self):
+        if not self.is_window_onscreen():
+            nearest_monitor = util.monitor_from_window(self.handle, win32con.MONITOR_DEFAULTTONEAREST)
+            if not nearest_monitor:
+                logger.error("Cannot determine monitor nearest to game window.")
+                return False
+            monitor_info = util.get_monitor_info(nearest_monitor)
+            if not monitor_info:
+                logger.error("Cannot get monitor info.")
+                # raise Exception("Cannot get monitor info.")
+                return False
+            monitor_rect = monitor_info.get("Work")
+            prev_rect = util.get_window_rect(self.handle)
+            util.move_window(self.handle, monitor_rect[0], monitor_rect[1], prev_rect[2], prev_rect[3], True )
+        return True
+
     def get_workspace_rect(self):
-        monitor = util.monitor_from_window(self.handle)
+        monitor = util.monitor_from_window(self.handle, win32con.MONITOR_DEFAULTTOPRIMARY)
         if not monitor:
             logger.error("Cannot determine monitor used by game window.")
             # raise Exception("Cannot determine monitor used by game window.")
