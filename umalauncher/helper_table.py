@@ -15,7 +15,19 @@ class TrainingPartner():
 
         if partner_id < 100:
             support_id = chara_info['support_card_array'][partner_id - 1]['support_card_id']
-            support_data = mdb.get_support_card_dict()[support_id]
+            support_card_dict = mdb.get_support_card_dict()
+            if support_id not in support_card_dict:
+                logger.warning(f"Could not find support_id {support_id}, attempting to force an update")
+                support_card_dict = mdb.get_support_card_dict(force=True)
+                if support_id not in support_card_dict:
+                    logger.error(f"Could not find support_id {support_id} after forced update")
+                    # TODO: handle this better
+                    util.show_error_box("Error", f"Could not find a support card with id {support_id} in game database ({mdb.get_db_path()}). Try restarting the game and Uma Launcher, and make sure the game is up to date. If that doesn't work, try downloading all game data from the options menu.")
+                    raise Exception(f"Could not find support_id {support_id} after forced update")
+                else:
+                    logger.info(f"Successfully found support_id {support_id}")
+
+            support_data = support_card_dict[support_id]
             chara_id = support_data[3]
             self.chara_id = chara_id
             self.img = f"https://gametora.com/images/umamusume/characters/icons/chr_icon_{chara_id}.png"
@@ -243,10 +255,13 @@ class HelperTable():
 
 
         # Support Dict
-        eval_dict = {
-            eval_data['training_partner_id']: TrainingPartner(eval_data['training_partner_id'], eval_data['evaluation'], data['chara_info'])
-            for eval_data in data['chara_info']['evaluation_info_array']
-        }
+        eval_dict = {}
+        for eval_data in data['chara_info']['evaluation_info_array']:
+            try:
+                eval_dict[eval_data['training_partner_id']] = TrainingPartner(eval_data['training_partner_id'], eval_data['evaluation'],data['chara_info'])
+            except Exception as e:
+                logger.error(f"Error while creating TrainingPartner: {e}")
+                continue
 
         onsen_points_gain = {}
         # Onsen
