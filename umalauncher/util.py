@@ -244,7 +244,10 @@ def download_file(url, path):
     shutil.move(tmp_path, path)
 
 def open_folder(path):
-    os.startfile(path)
+    try:
+        os.startfile(path)
+    except:
+        logger.error(f"Failed to open training logs folder: {path}")
 
 
 
