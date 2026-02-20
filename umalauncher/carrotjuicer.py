@@ -1125,6 +1125,7 @@ def setup_helper_page(browser: horsium.BrowserWindow):
     gametora_remove_cookies_banner(browser)
     gametora_close_ad_banner( browser )
 
+
 def setup_skill_window(browser: horsium.BrowserWindow):
     # Setup callback for window position
     browser.execute_script("""
@@ -1139,33 +1140,70 @@ def setup_skill_window(browser: horsium.BrowserWindow):
         setTimeout(window.send_screen_rect, 2000);
     }
     setTimeout(window.send_screen_rect, 2000);
-
     """)
 
+    # Hide filters by finding the search box and hiding its parent container
+    browser.execute_script("""
+        let searchBox = document.querySelector("input[class*='filters_search_box']");
+        if (searchBox && searchBox.parentElement) {
+            searchBox.parentElement.style.display = "none";
+        }
+    """)
 
-    # Hide filters
-    browser.execute_script("""document.querySelector("[class^='filters_filter_container_']").style.display = "none";""")
+    # Hide navigation and collapse the empty space it leaves behind
+    browser.execute_script("""
+        // 1. Hide the Nav and its Background
+        let navBar = document.querySelector("nav");
+        if (navBar) navBar.style.display = "none";
+
+        let navBg = document.querySelector("div[id^='styles_page-topnav-bg']");
+        if (navBg) navBg.style.display = "none";
+
+        // 2. Override the CSS Grid so the empty row collapses
+        let pageWrapper = document.querySelector("div[class^='styles_page__']");
+        if (pageWrapper) {
+            // Replacing fixed pixel heights with 'auto' tells the grid to shrink empty rows to 0px
+            pageWrapper.style.gridTemplateRows = "auto auto 1fr"; 
+        }
+
+        // 3. Remove the top-padding that was making room for the sticky nav
+        let mainContent = document.querySelector("main[id^='styles_page-main']");
+        if (mainContent) {
+            mainContent.style.paddingTop = "0px";
+            mainContent.style.marginTop = "0px";
+        }
+    """)
+
+    # Hide the result count
+    browser.execute_script("""
+        let possibleDivs = document.querySelectorAll('div[style*="margin-bottom: 20px"]');
+        for (let div of possibleDivs) {
+            if (div.textContent.includes("Found") && div.textContent.includes("results")) {
+                div.style.display = "none";
+                break;
+            }
+        }
+    """)
 
     gametora_dark_mode(browser)
 
-    # Enable settings
-    # Expand settings
-    browser.execute_script("""document.querySelector("[class^='utils_padbottom_half_']").querySelector("button").click();""")
-    while not browser.execute_script("""return document.querySelector("label[for='highlightCheckbox']");"""):
-        time.sleep(0.25)
+    # Enable all settings checkboxes
+    browser.execute_script("""
+        const settingsIds = [
+            'highlightCheckbox',
+            'showIdCheckbox',
+            'showCondViewerCheckbox',
+            'showUniqueCharCheckbox',
+            'alwaysShowAllCheckbox'
+        ];
 
-    # Enable highlight
-    highlight_checked = browser.execute_script("""return document.querySelector("label[for='highlightCheckbox']").previousSibling.checked;""")
-    if not highlight_checked:
-        browser.execute_script("""document.querySelector("label[for='highlightCheckbox']").click();""")
-
-    # Enable show id
-    show_id_checked = browser.execute_script("""return document.querySelector("label[for='showIdCheckbox']").previousSibling.checked;""")
-    if not show_id_checked:
-        browser.execute_script("""document.querySelector("label[for='showIdCheckbox']").click();""")
-
-    # Collapse settings
-    browser.execute_script("""document.querySelector("[class^='utils_padbottom_half_']").querySelector("button").click();""")
+        settingsIds.forEach(id => {
+            let cb = document.getElementById(id);
+            if (cb && !cb.checked) {
+                cb.click();
+            }
+        });
+    """)
 
     gametora_remove_cookies_banner(browser)
     gametora_close_ad_banner(browser)
