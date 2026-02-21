@@ -15,7 +15,7 @@ pypresence~=4.3.0
 PyQt5~=5.15.11
 pystray~=0.19.5
 pywin32==310
-requests~=2.32.4
+requests~=2.32.5
 selenium~=4.38.0
 SteamPathFinder==0.0.5
 Werkzeug~=3.1.3
