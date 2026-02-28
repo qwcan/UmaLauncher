@@ -670,6 +670,15 @@ def get_dreams_image_dict(force=False):
         dreams_image_dict.update(assets_folder_images_to_dict("_assets/dreams"))
     return dreams_image_dict
 
+mant_image_dict = {}
+def get_mant_image_dict(force=False):
+    global mant_image_dict
+
+    if force or not mant_image_dict:
+        logger.debug("Loading Beyond Dreams images...")
+        mant_image_dict.update(assets_folder_images_to_dict("_assets/mant"))
+    return mant_image_dict
+
 GROUP_SUPPORT_ID_TO_PASSION_ZONE_EFFECT_ID_DICT = {}
 def get_group_support_id_to_passion_zone_effect_id_dict(force=False):
     global GROUP_SUPPORT_ID_TO_PASSION_ZONE_EFFECT_ID_DICT

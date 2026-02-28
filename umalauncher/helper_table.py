@@ -762,6 +762,27 @@ class HelperTable():
                 del command_info[constants.COMMAND_ID_TO_KEY[3101]]
 
 
+        # MANT
+        races = []
+        pick_up_item_info_array = []
+        user_item_info_array = []
+        rival_race_info_array = []
+        coin_num = -1
+        if "free_data_set" in data:
+            if 'coin_num' in data['free_data_set']:
+                coin_num = data['free_data_set']['coin_num']
+            # Shop (shop_item_id, item_id, coin_num, original_coin_num, item_buy_num (1=sold out), limit_buy_count, limit_turn)
+            # TODO: how to get turns left?
+            if 'pick_up_item_info_array' in data['free_data_set']:
+                pick_up_item_info_array = data['free_data_set']['pick_up_item_info_array']
+            # Inventory (item_id, num)
+            if 'user_item_info_array' in data['free_data_set']:
+                user_item_info_array = data['free_data_set']['user_item_info_array']
+            # List of rivals for this turn (program_id, chara_id)
+            if 'rival_race_info_array' in data['free_data_set']:
+                rival_race_info_array = data['free_data_set']['rival_race_info_array']
+        #TODO
+        race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_05.png"
 
 
 
@@ -794,7 +815,11 @@ class HelperTable():
             "gff_vegetables": gff_vegetables,
             "gff_field_point": gff_field_point,
             "eval_dict": eval_dict,
-            "all_commands": all_commands
+            "all_commands": all_commands,
+            'pick_up_item_info_array': pick_up_item_info_array,
+            'user_item_info_array': user_item_info_array,
+            'rival_race_info_array': rival_race_info_array,
+            'coin_num': coin_num
         }
 
         # Update preset if needed.
