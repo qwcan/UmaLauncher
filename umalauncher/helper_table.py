@@ -618,7 +618,6 @@ class HelperTable():
         scheduled_races = []
         if 'reserved_race_array' in data:
             for race_data in data['reserved_race_array'][0]['race_array']:
-                # TODO: Maybe cache the mdb data for all race programs?
                 program_data = mdb.get_program_id_data(race_data['program_id'])
                 if not program_data:
                     util.show_warning_box(f"Could not get program data for program_id {race_data['program_id']}")
@@ -768,21 +767,32 @@ class HelperTable():
         user_item_info_array = []
         rival_race_info_array = []
         coin_num = -1
+        uma_aptitudes = {}
         if "free_data_set" in data:
-            if 'coin_num' in data['free_data_set']:
-                coin_num = data['free_data_set']['coin_num']
+            free_data = data['free_data_set']
+            if 'coin_num' in free_data:
+                coin_num = free_data['coin_num']
             # Shop (shop_item_id, item_id, coin_num, original_coin_num, item_buy_num (1=sold out), limit_buy_count, limit_turn)
             # TODO: how to get turns left?
-            if 'pick_up_item_info_array' in data['free_data_set']:
-                pick_up_item_info_array = data['free_data_set']['pick_up_item_info_array']
+            if 'pick_up_item_info_array' in free_data:
+                pick_up_item_info_array = free_data['pick_up_item_info_array']
             # Inventory (item_id, num)
-            if 'user_item_info_array' in data['free_data_set']:
-                user_item_info_array = data['free_data_set']['user_item_info_array']
+            if 'user_item_info_array' in free_data:
+                user_item_info_array = free_data['user_item_info_array']
             # List of rivals for this turn (program_id, chara_id)
-            if 'rival_race_info_array' in data['free_data_set']:
-                rival_race_info_array = data['free_data_set']['rival_race_info_array']
-        #TODO
-        race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_05.png"
+            if 'rival_race_info_array' in free_data:
+                rival_race_info_array = free_data['rival_race_info_array']
+        if "race_condition_array" in data:
+            races = data['race_condition_array']
+        if "chara_info" in data:
+            chara_info = data['chara_info']
+            uma_aptitudes["proper_ground_turf"] = chara_info['proper_ground_turf']
+            uma_aptitudes["proper_ground_dirt"] = chara_info['proper_ground_dirt']
+            uma_aptitudes["proper_distance_short"] = chara_info['proper_distance_short']
+            uma_aptitudes["proper_distance_mile"] = chara_info['proper_distance_mile']
+            uma_aptitudes["proper_distance_middle"] = chara_info['proper_distance_middle']
+            uma_aptitudes["proper_distance_long"] = chara_info['proper_distance_long']
+
 
 
 
@@ -816,6 +826,8 @@ class HelperTable():
             "gff_field_point": gff_field_point,
             "eval_dict": eval_dict,
             "all_commands": all_commands,
+            'races': races,
+            'uma_aptitudes': uma_aptitudes,
             'pick_up_item_info_array': pick_up_item_info_array,
             'user_item_info_array': user_item_info_array,
             'rival_race_info_array': rival_race_info_array,

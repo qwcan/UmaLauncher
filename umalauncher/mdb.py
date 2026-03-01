@@ -439,18 +439,42 @@ def get_program_id_grade(program_id):
 
     return row[0]
 
-def get_program_id_data(program_id):
+def race_is_dirt(program_id):
     with Connection() as (_, cursor):
         cursor.execute(
-            """SELECT * FROM single_mode_program WHERE id = ?;""",
+            """SELECT r.is_dirtgrade FROM single_mode_program smp JOIN race_instance ri on smp.race_instance_id = ri.id JOIN race r on ri.race_id = r.id WHERE smp.id = ?;""",
             (program_id,)
         )
-        rows = cursor.fetchall()
-        columns = get_columns(cursor)
-    
-    if not rows:
-        return None
-    return rows_to_dict(rows, columns)[0]
+        row = cursor.fetchone()
+
+    if not row:
+        return False
+
+    return row[0] == 1
+
+PROGRAM_ID_DICT = {}
+def get_program_id_dict(force=False):
+    global PROGRAM_ID_DICT
+    if not PROGRAM_ID_DICT or force:
+        with Connection() as (_, cursor):
+            try:
+                cursor.execute(
+                    """SELECT * FROM single_mode_program;"""
+                )
+                rows = cursor.fetchall()
+                columns = get_columns(cursor)
+                if not rows:
+                    temp = None
+                else:
+                    races = rows_to_dict(rows, columns)
+                    PROGRAM_ID_DICT.update( { race["id"] : race for race in races } )
+            except sqlite3.OperationalError as e:
+                logger.error( f"get_program_id_dict failed: {e}\n{traceback.format_exc()}")
+
+    return PROGRAM_ID_DICT
+
+def get_program_id_data(program_id):
+    return get_program_id_dict().get(program_id)
 
 SKILL_ID_DICT = {}
 def get_skill_id_dict(force=False):
@@ -689,7 +713,8 @@ UPDATE_FUNCS = [
     get_group_card_effect_ids,
     get_skill_id_dict,
     get_scouting_score_to_rank_dict,
-    get_single_mode_unique_chara_dict
+    get_single_mode_unique_chara_dict,
+    get_program_id_dict
 ]
 
 def has_carotene_table():

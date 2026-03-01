@@ -6,6 +6,7 @@ import gui
 import util
 import constants
 import settings_elements as se
+from umalauncher import mdb
 
 TABLE_HEADERS = {
     "fac": "Facility",
@@ -240,6 +241,10 @@ class Preset():
             html_elements.append(self.generate_gff(main_info))
 
         html_elements.append(self.generate_table(command_info, main_info))
+
+        if self.settings.scenario_specific_enabled.value:
+            # Put MANT after the table
+            html_elements.append(self.generate_mant(main_info))
 
         # html_elements.append("""<button id="btn-skill-window" onclick="window.await_skill_window();">Open Skills Window</button>""")
 
@@ -605,7 +610,107 @@ class Preset():
         
         return f"<div id='gff' style='display:flex; flex-flow: column; justify-content:center; align-items:center; gap: 0.5rem;'>{internal}</div>"
 
-        
+    def generate_mant(self, main_info):
+        if main_info['scenario_id'] != 4:
+            return ""
+        html_text = ""
+        mant_imgs = util.get_mant_image_dict()
+
+        if main_info['coin_num'] > 0:
+            html_text += f"<div><img src=\"{mant_imgs["coin"]}\" width=\"32\" height=\"32\"/> {main_info['coin_num']}</div>"
+
+        shop_div = self.generate_mant_shop_div(main_info)
+        races_div = self.generate_mant_races_div(main_info)
+
+        html_text += "<div style=\"display:flex;justify-content:space-evenly;\">"
+        html_text += shop_div
+        html_text += races_div
+        html_text += "</div>"
+        return html_text
+
+    def generate_mant_shop_div(self, main_info):
+        inventory_div = ""
+        shop_div = ""
+        mant_imgs = util.get_mant_image_dict()
+
+        if len(main_info['user_item_info_array'] > 0):
+            inventory_div += "<div><table><thead><tr><th></th><th>Name</th><th>Effect</th><th>Quantity</th></tr></thead><tbody>"
+            for item in main_info['user_item_info_array']:
+                item_id = item['item_id']
+                inventory_div += "<tr>"
+                inventory_div += f"<td><img src=\"{"scenario_free_item_icon_" + mant_imgs[f'{item_id:05}']}\" width=\"32\" height=\"32\"/></td>"
+                inventory_div += f"<td>{constants.MANT_ITEM_ID_TO_NAME[item_id]}</td>"
+                inventory_div += f"<td>{constants.MANT_ITEM_ID_TO_DESCRIPTION[item_id]}</td>"
+                inventory_div += f"<td>{item['num']}</td>"
+                inventory_div += "</tr>"
+            inventory_div += "</tbody></div>"
+
+        if len(main_info['pick_up_item_info_array'] > 0):
+            shop_div += "<div><table><thead><tr><th></th><th>Name</th><th>Effect</th><th>Price</th></tr></thead><tbody>"
+            for item in reversed(main_info['pick_up_item_info_array']): # This list is reversed for some reason???
+                if item['item_buy_num'] == item['limit_buy_count']:
+                    # Sold out
+                    continue
+                item_id = item['item_id']
+                shop_div += "<tr>"
+                shop_div += f"<td><img src=\"{"scenario_free_item_icon_" + mant_imgs[f'{item_id:05}']}\" width=\"32\" height=\"32\"/></td>"
+                shop_div += f"<td>{constants.MANT_ITEM_ID_TO_NAME[item_id]}</td>"
+                shop_div += f"<td>{constants.MANT_ITEM_ID_TO_DESCRIPTION[item_id]}</td>"
+                shop_div += f"<td>{item['coin_num']}</td>"
+                shop_div += "</tr>"
+            shop_div += "</tbody></table></div>"
+
+        html_text = "<div style=\"display:flex;flex-direction:column;\">"
+        html_text += inventory_div
+        html_text += shop_div
+        html_text += "</div>"
+        return html_text
+
+    def generate_mant_races_div(self, main_info):
+        html_text = "<div>"
+        races_div = ""
+        mant_imgs = util.get_mant_image_dict()
+
+        if len(main_info['races']) > 0:
+            races_div += "<div><table><thead><tr><th>Grade</th><th>Surface/Distance</th><th>Pt</th><th>Coins</th><th>Rival</th></tr></thead><tbody>"
+            rival_program_ids = [race['program_id'] for race in main_info['rival_race_info_array']]
+            for race in main_info['races']:
+                program_id = race['program_id']
+                race_grade = mdb.get_program_id_grade(program_id)
+
+                if not race_grade:
+                    logger.error(f"Race grade not found for program id {program_id}")
+
+                # These aren't on Gametora anymore, but keep them around in case they update the page again.
+                race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_"
+                if race_grade == 700:
+                    race_img_url += "06.png" # Pre-OP
+                elif race_grade == 400:
+                    race_img_url += "02.png" # OP
+                elif race_grade == 300:
+                    race_img_url += "03.png" # G3
+                elif race_grade == 200:
+                    race_img_url += "04.png" # G2
+                elif race_grade == 100:
+                    race_img_url += "05.png" # G1
+                else:
+                    race_img_url += "07.png" # EX
+                #TODO: Debut?
+                races_div += f"<td><img src=\"{race_img_url}\" width=\"32\" height=\"32\"/></td>"
+                races_div += f"<td></td>"#TODO distance/surface (grey out if doesn't match your uma's aptitudes)
+                races_div += f"<td></td>"#TODO Pt
+                races_div += f"<td></td>"#TODO Coins
+                if program_id in rival_program_ids:
+                    races_div += f"<td><img src=\"{mant_imgs['rival']}\" width=\"32\" height=\"32\"/></td>"
+                else:
+                    races_div += f"<td></td>"
+            races_div += "</tbody></table></div>"
+
+        html_text += races_div
+        html_text += "</div>"
+        return html_text
+
+
     def to_dict(self):
         return {
             "name": self.name,
