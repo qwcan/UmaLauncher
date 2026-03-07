@@ -128,7 +128,7 @@ def _get_event_titles_special(story_id, card_id):
         if index >= len(default_ids):
             return event_titles
         
-        event_titles.append(_get_event_titles_default(default_ids[index]))
+        event_titles.extend(_get_event_titles_default(default_ids[index]))
         return event_titles
 
 
