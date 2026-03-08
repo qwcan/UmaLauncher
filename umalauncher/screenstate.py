@@ -319,7 +319,7 @@ class ScreenStateHandler():
                     self.vpn.disconnect()
                     self.vpn = None
 
-            if not self.carrotjuicer_closed and self.threader.settings["hide_carrotjuicer"]:
+            if 'IS_UL_GLOBAL' not in os.environ and not self.carrotjuicer_closed and self.threader.settings["hide_carrotjuicer"]:
                 self.carrotjuicer_handle = util.get_window_handle("Umapyoi", type=util.EXACT)
                 if self.carrotjuicer_handle:
                     logger.info("Attempting to minimize CarrotJuicer.")
@@ -332,7 +332,7 @@ class ScreenStateHandler():
                         self.carrotjuicer_closed = True
                         time.sleep(0.25)
             
-            if self.carrotjuicer_closed and not self.threader.settings["hide_carrotjuicer"]:
+            if 'IS_UL_GLOBAL' not in os.environ and self.carrotjuicer_closed and not self.threader.settings["hide_carrotjuicer"]:
                 logger.debug(f"CarrotJuicer handle: {self.carrotjuicer_handle}")
                 if self.carrotjuicer_handle:
                     logger.info("Attempting to restore CarrotJuicer.")
