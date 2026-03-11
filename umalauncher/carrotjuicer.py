@@ -192,7 +192,7 @@ class CarrotJuicer:
 
     def save_rect(self, rect_var, setting):
         if rect_var:
-            if (rect_var['x'] == -32000 and rect_var['y'] == -32000):
+            if rect_var['x'] <= -10666 and rect_var['y'] <= -10666:
                 logger.warning(f"Browser minimized, cannot save position for {setting}: {rect_var}")
                 rect_var = None
                 return

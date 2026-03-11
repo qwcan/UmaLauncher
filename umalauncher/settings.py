@@ -481,7 +481,7 @@ class SettingsHandler():
         
         orientation_key = constants.ORIENTATION_DICT[portrait]
 
-        if pos is not None and pos[0] == -32000 and pos[1] == -32000:
+        if pos is not None and pos[0] <= -10666 and pos[1] <= -10666:
             # logger.warning(f"Game minimized, cannot save {constants.ORIENTATION_DICT[portrait]}: {pos}")
             return
 
