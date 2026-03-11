@@ -7,6 +7,7 @@ import math
 import json
 from datetime import datetime
 from inspect import trace
+from time import sleep
 
 import msgpack
 import select
@@ -191,7 +192,7 @@ class CarrotJuicer:
 
     def save_rect(self, rect_var, setting):
         if rect_var:
-            if (rect_var['x'] == -32000 and rect_var['y'] == -32000):
+            if rect_var['x'] <= -10666 and rect_var['y'] <= -10666:
                 logger.warning(f"Browser minimized, cannot save position for {setting}: {rect_var}")
                 rect_var = None
                 return
@@ -465,14 +466,30 @@ class CarrotJuicer:
                         self.browser.execute_script("""document.getElementById("boxSupportExtra").click();""")
                         self.browser.execute_script(
                             """
-                                var cont = document.getElementById("30021").parentElement.parentElement.parentElement;
-                                var rSupportsCheckbox = cont.lastChild?.children[1]?.children[1]?.querySelector('input');
-                                var showUpcomingSupportsCheckbox = cont.lastChild?.children[1]?.children[2]?.querySelector('input');
+                                var cont = document.querySelector('[class^="filters_hide"]').parentElement.parentElement.parentElement;
+                                var rSupportsCheckbox = cont.querySelector('[id*="ShowR"]');
+                                var showUpcomingSupportsCheckbox = cont.querySelector('[id*="showUpcoming"]');
+                                var onlyOwned = cont.querySelector('[id*="onlyOwned"]');
+                                var filtersDiv = document.querySelector('[class^="filters_hide"]').parentElement.parentElement;
+                                if( filtersDiv ) 
+                                {
+                                    for( var i = 0; i < filtersDiv.children.length; i++ )
+                                    {
+                                        var filter = filtersDiv.children[i]?.querySelector('label');
+                                        if( filter && filter.className.includes("_active") )
+                                        {
+                                            filter.click();
+                                        }
+                                    }
+                                }
                                 if( rSupportsCheckbox && !rSupportsCheckbox.checked ) {
                                     rSupportsCheckbox.click(); 
                                 }
                                 if( showUpcomingSupportsCheckbox && !showUpcomingSupportsCheckbox.checked ) {
                                     showUpcomingSupportsCheckbox.click(); 
+                                }
+                                if( onlyOwned && onlyOwned.checked ) {
+                                    onlyOwned.click(); 
                                 }
                                 
                                 var ele = document.getElementById(arguments[0].toString());
@@ -481,7 +498,7 @@ class CarrotJuicer:
                                     ele.click();
                                     return;
                                 }
-                                cont.querySelector('img[src="/images/ui/close.png"]').click();
+                                cont.parentElement.parentElement.querySelector('img[src="/images/ui/close.png"]').click();
                             """,
                             event_data['event_contents_info']['support_card_id'])
                     else:
