@@ -410,3 +410,12 @@ MANT_ITEM_ID_TO_DESCRIPTION = {
     11002: "Race stat gain +35%",
     11003: "Race fan gain +50%"
 }
+
+MANT_ITEM_ID_TO_MODIFIER = {
+    8001: "+20%",
+    8002: "+40%",
+    8003: "+60%",
+    11001: "+20%",
+    11002: "+35%",
+    11003: "+50%",
+}

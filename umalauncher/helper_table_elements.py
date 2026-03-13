@@ -615,7 +615,7 @@ class Preset():
         #logger.info(main_info)
         if main_info['scenario_id'] != 4:
             return ""
-        html_text = ""
+        #html_text = ""
         mant_imgs = util.get_mant_image_dict()
 
         # TODO: is a coin display needed, or is it sufficient to just show which items can be bought?
@@ -625,7 +625,7 @@ class Preset():
         shop_div = self.generate_mant_shop_div(main_info)
         races_div = self.generate_mant_races_div(main_info)
 
-        html_text += "<div style=\"display:flex;justify-content:space-evenly; gap:0.75rem;\">"
+        html_text = "<div style=\"display:flex;flex-direction:column;align-items:center;gap:0.5rem;width:100%;\">"
         html_text += shop_div
         html_text += races_div
         html_text += "</div>"
@@ -635,50 +635,72 @@ class Preset():
         if main_info['turn'] <= 12:
             # Ignore anything before the debut
             return ""
-        inventory_div = ""
-        shop_div = ""
+        if len(main_info['pick_up_item_info_array']) == 0:
+            return ""
+
         mant_imgs = util.get_mant_image_dict()
+        items_html = ""
 
-        if len(main_info['user_item_info_array']) > 0:
-            inventory_div += "<div><table style=\"width:100%;\"><thead><tr style=\"white-space:nowrap;\"><th>Inv</th><th>Effect</th><th>Qty</th></tr></thead><tbody>"
-            for item in main_info['user_item_info_array']:
-                item_id = item['item_id']
-                inventory_div += "<tr style=\"white-space:nowrap;\">"
-                inventory_div += f"<td><img src=\"{mant_imgs[f'scenario_free_item_icon_{item_id:05}']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle\"/></td>"
-                #inventory_div += f"<td>{constants.MANT_ITEM_ID_TO_NAME[item_id]}</td>"
-                inventory_div += f"<td>{constants.MANT_ITEM_ID_TO_DESCRIPTION[item_id]}</td>"
-                inventory_div += f"<td>{item['num']}</td>"
-                inventory_div += "</tr>"
-            inventory_div += "</tbody></div>"
+        for item in reversed(main_info['pick_up_item_info_array']):
+            if item['item_buy_num'] == item['limit_buy_count']:
+                # Sold out
+                continue
+            item_id = item['item_id']
+            icon_src = mant_imgs.get(f'scenario_free_item_icon_{item_id:05}', '')
+            description = constants.MANT_ITEM_ID_TO_DESCRIPTION.get(item_id, '')
+            modifier = constants.MANT_ITEM_ID_TO_MODIFIER.get(item_id, '')
 
-        if len(main_info['pick_up_item_info_array']) > 0:
-            shop_div += f"<div><table style=\"width:100%;\"><thead><tr style=\"white-space:nowrap;\"><th>Shop</th><th>Effect</th><th>Turns</th><th><img src=\"{mant_imgs['coin']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/></th></tr></thead><tbody>"
-            for item in reversed(main_info['pick_up_item_info_array']): # This list is reversed for some reason???
-                if item['item_buy_num'] == item['limit_buy_count']:
-                    # Sold out
-                    continue
-                item_id = item['item_id']
-                shop_div += "<tr style=\"white-space:nowrap;\">"
-                shop_div += f"<td><img src=\"{mant_imgs[f'scenario_free_item_icon_{item_id:05}']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle\"/></td>"
-                #shop_div += f"<td>{constants.MANT_ITEM_ID_TO_NAME[item_id]}</td>"
-                shop_div += f"<td>{constants.MANT_ITEM_ID_TO_DESCRIPTION[item_id]}</td>"
-                shop_div += f"<td>{self.get_turns_left_text(item, main_info['turn'])}</td>"
-                shop_div += f"<td style=\"{ '' if main_info['coin_num'] >= item['coin_num'] else 'color:red;' }\">{item['coin_num']}</td>"
-                shop_div += "</tr>"
-            shop_div += "</tbody></table></div>"
+            # Turns left badge
+            turns_left = self._get_mant_turns_left(item, main_info['turn'])
+            turn_color = '#e74c3c' if turns_left == 1 else '#e67e22' if turns_left <= 2 else '#888'
+            turns_badge = (
+                f'<div style="position:absolute;top:-2px;right:-2px;'
+                f'background:{turn_color};color:#fff;font-size:0.6rem;font-weight:700;'
+                f'min-width:14px;height:14px;line-height:14px;text-align:center;'
+                f'border-radius:7px;padding:0 2px;z-index:2;">'
+                f'{turns_left}</div>'
+            )
 
-        html_text = "<div style=\"display:flex;flex-direction:column;width:70%;\">"
-        # TODO: is the inventory div really needed?
-        #html_text += inventory_div
-        html_text += shop_div
-        html_text += "</div>"
-        return html_text
+            # Coin cost badge
+            can_afford = main_info['coin_num'] >= item['coin_num']
+            cost_color = '#ccc' if can_afford else '#e74c3c'
+            coin_badge = (
+                f'<div style="position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);'
+                f'background:rgba(0,0,0,0.7);color:{cost_color};font-size:0.55rem;font-weight:700;'
+                f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
+                f'{item["coin_num"]}</div>'
+            )
+
+            # Modifier label for shared-icon items (megaphones, cleat hammers)
+            modifier_label = ""
+            if modifier:
+                modifier_label = (
+                    f'<div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);'
+                    f'background:rgba(0,0,0,0.75);color:#ffd700;font-size:0.5rem;font-weight:700;'
+                    f'padding:0 2px;border-radius:3px;white-space:nowrap;z-index:2;line-height:1.2;">'
+                    f'{modifier}</div>'
+                )
+
+            items_html += (
+                f'<div title="{description}" style="position:relative;flex:0 0 auto;'
+                f'width:36px;height:36px;cursor:default;">'
+                f'<img src="{icon_src}" width="32" height="32" '
+                f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"/>'
+                f'{turns_badge}{coin_badge}{modifier_label}'
+                f'</div>'
+            )
+
+        return (
+            f'<div style="display:flex;flex-wrap:nowrap;justify-content:center;'
+            f'gap:0.4rem;width:100%;padding:0.2rem 0;">'
+            f'{items_html}</div>'
+        )
 
     def generate_mant_races_div(self, main_info):
         if main_info['turn'] <= 12 or main_info['turn'] >= 73:
             # Ignore anything before the debut and during Twinkle Start Climax
             return ""
-        html_text = "<div style=\"width:50%;\">"
+        html_text = "<div style=\"width:100%;\">"
         races_div = ""
         mant_imgs = util.get_mant_image_dict()
 
@@ -727,14 +749,17 @@ class Preset():
         html_text += "</div>"
         return html_text
 
-    def get_turns_left_text(self, item, turn):
+    def _get_mant_turns_left(self, item, turn):
         turns_left = 0
         if item['limit_turn'] == 0:
             # Normal shop item, refreshes every six turns
             turns_left = 6 - ((turn - 12) % 6) + 1
         else:
             turns_left = item['limit_turn'] - turn + 1 # limit_turn is the last turn it can be bought
+        return turns_left
 
+    def get_turns_left_text(self, item, turn):
+        turns_left = self._get_mant_turns_left(item, turn)
         return f"<div style=\"{'color:red;' if turns_left == 1 else 'color:orange;' if turns_left == 2 else ''}\">{turns_left}</div>"
 
     def get_race_details_text(self, surface, distance, uma_aptitudes):
