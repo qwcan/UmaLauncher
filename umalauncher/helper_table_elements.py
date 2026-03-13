@@ -619,7 +619,7 @@ class Preset():
         mant_imgs = util.get_mant_image_dict()
 
         if main_info['coin_num'] > 0:
-            html_text += f"<div style=\"display:flex; align-items:center; gap:0.25rem;\"><img src=\"{mant_imgs["coin"]}\" width=\"32\" height=\"32\"/> {main_info['coin_num']}</div>"
+            html_text += f"<div style=\"display:flex; align-items:center; gap:0.25rem;\"><img src=\"{mant_imgs['coin']}\" width=\"32\" height=\"32\"/> {main_info['coin_num']}</div>"
 
         shop_div = self.generate_mant_shop_div(main_info)
         races_div = self.generate_mant_races_div(main_info)
