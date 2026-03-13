@@ -663,7 +663,7 @@ class Preset():
                 #shop_div += f"<td>{constants.MANT_ITEM_ID_TO_NAME[item_id]}</td>"
                 shop_div += f"<td>{constants.MANT_ITEM_ID_TO_DESCRIPTION[item_id]}</td>"
                 shop_div += f"<td>{self.get_turns_left_text(item, main_info['turn'])}</td>"
-                shop_div += f"<td style=\"color:{ 'lightgreen' if main_info['coin_num'] >= item['coin_num'] else 'red' };\">{item['coin_num']}</td>"
+                shop_div += f"<td style=\"{ '' if main_info['coin_num'] >= item['coin_num'] else 'color:red;' }\">{item['coin_num']}</td>"
                 shop_div += "</tr>"
             shop_div += "</tbody></table></div>"
 
