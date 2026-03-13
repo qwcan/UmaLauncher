@@ -636,7 +636,7 @@ class Preset():
         mant_imgs = util.get_mant_image_dict()
 
         if len(main_info['user_item_info_array']) > 0:
-            inventory_div += "<div><table><thead><tr><th>Inv.</th><th>Name</th><th>Effect</th><th>#</th></tr></thead><tbody>"
+            inventory_div += "<div><table><thead><tr><th>Inv</th><th>Name</th><th>Effect</th><th>#</th></tr></thead><tbody>"
             for item in main_info['user_item_info_array']:
                 item_id = item['item_id']
                 inventory_div += "<tr>"
@@ -648,7 +648,7 @@ class Preset():
             inventory_div += "</tbody></div>"
 
         if len(main_info['pick_up_item_info_array']) > 0:
-            shop_div += f"<div><table><thead><tr style=\"white-space:nowrap;\"><th></th><th>Name</th><th>Effect</th><th><img src=\"{mant_imgs['coin']}\" width=\"32\" height=\"32\" style=\"vertical-align:middle;\"/></th></tr></thead><tbody>"
+            shop_div += f"<div><table><thead><tr style=\"white-space:nowrap;\"><th></th><th>Name</th><th>Effect</th><th><img src=\"{mant_imgs['coin']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/></th></tr></thead><tbody>"
             for item in reversed(main_info['pick_up_item_info_array']): # This list is reversed for some reason???
                 if item['item_buy_num'] == item['limit_buy_count']:
                     # Sold out
@@ -662,7 +662,7 @@ class Preset():
                 shop_div += "</tr>"
             shop_div += "</tbody></table></div>"
 
-        html_text = "<div style=\"display:flex;flex-direction:column;flex-grow:1\">"
+        html_text = "<div style=\"display:flex;flex-direction:column;width:50%;\">"
         html_text += inventory_div
         html_text += shop_div
         html_text += "</div>"
@@ -672,12 +672,13 @@ class Preset():
         if main_info['turn'] <= 12:
             # Ignore anything before the debut
             return ""
-        html_text = "<div style=\"flex-grow:1;\">"
+        html_text = "<div style=\"width:50%;\">"
         races_div = ""
         mant_imgs = util.get_mant_image_dict()
 
+        # TODO: don't remove the table entirely if no races are available (happens when race results come back)
         if len(main_info['races']) > 0:
-            races_div += "<div><table><thead><tr><th>Grade</th><th>Race</th><th>Surface/Distance</th><th>Pt</th><th>Rival</th></tr></thead><tbody>"
+            races_div += "<div><table><thead><tr><th>Grade</th><th>Race</th><th>Surface/Dist</th><th>Pt</th><th>Rival</th></tr></thead><tbody>"
             rival_program_ids = [race['program_id'] for race in main_info['rival_race_info_array']]
             for race in main_info['races']:
                 logger.info( "Race: " + str(race) )
