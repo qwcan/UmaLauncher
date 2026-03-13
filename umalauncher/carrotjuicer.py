@@ -406,6 +406,9 @@ class CarrotJuicer:
 
                 for skill_tip in data['chara_info']['skill_tips_array']:
                     if skill_tip['rarity'] > 1:
+                        if (skill_tip['group_id'], skill_tip['rarity']) not in self.skill_id_dict:
+                            logger.warning(f"Skill group_id/rarity not found in skill ID dict: {skill_tip['group_id']}, {skill_tip['rarity']}. Reloading skill ID dict.")
+                            self.skill_id_dict = mdb.get_skill_id_dict(force=True)
                         self.skills_list.append(self.skill_id_dict[(skill_tip['group_id'], skill_tip['rarity'])])  # TODO: Check if level is correct. Check gold skills and purple skills.
                     else:
                         self.skills_list.append(mdb.determine_skill_id_from_group_id(skill_tip['group_id'], skill_tip['rarity'], self.skills_list))
