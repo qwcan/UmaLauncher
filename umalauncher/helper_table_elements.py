@@ -636,7 +636,7 @@ class Preset():
         mant_imgs = util.get_mant_image_dict()
 
         if len(main_info['user_item_info_array']) > 0:
-            inventory_div += "<div><table><thead><tr><th></th><th>Name</th><th>Effect</th><th>Quantity</th></tr></thead><tbody>"
+            inventory_div += "<div><table><thead><tr><th>Inv.</th><th>Name</th><th>Effect</th><th>#</th></tr></thead><tbody>"
             for item in main_info['user_item_info_array']:
                 item_id = item['item_id']
                 inventory_div += "<tr>"
@@ -648,7 +648,7 @@ class Preset():
             inventory_div += "</tbody></div>"
 
         if len(main_info['pick_up_item_info_array']) > 0:
-            shop_div += "<div><table><thead><tr><th></th><th>Name</th><th>Effect</th><th>Price</th></tr></thead><tbody>"
+            shop_div += f"<div><table><thead><tr style=\"white-space:nowrap;\"><th></th><th>Name</th><th>Effect</th><th><img src=\"{mant_imgs['coin']}\" width=\"32\" height=\"32\" style=\"vertical-align:middle;\"/></th></tr></thead><tbody>"
             for item in reversed(main_info['pick_up_item_info_array']): # This list is reversed for some reason???
                 if item['item_buy_num'] == item['limit_buy_count']:
                     # Sold out
@@ -662,7 +662,7 @@ class Preset():
                 shop_div += "</tr>"
             shop_div += "</tbody></table></div>"
 
-        html_text = "<div style=\"display:flex;flex-direction:column;\">"
+        html_text = "<div style=\"display:flex;flex-direction:column;flex-grow:1\">"
         html_text += inventory_div
         html_text += shop_div
         html_text += "</div>"
@@ -672,12 +672,12 @@ class Preset():
         if main_info['turn'] <= 12:
             # Ignore anything before the debut
             return ""
-        html_text = "<div>"
+        html_text = "<div style=\"flex-grow:1;\">"
         races_div = ""
         mant_imgs = util.get_mant_image_dict()
 
         if len(main_info['races']) > 0:
-            races_div += "<div><table><thead><tr><th>Race</th><th>Surface/Distance</th><th>Pt</th><th>Rival</th></tr></thead><tbody>"
+            races_div += "<div><table><thead><tr><th>Grade</th><th>Race</th><th>Surface/Distance</th><th>Pt</th><th>Rival</th></tr></thead><tbody>"
             rival_program_ids = [race['program_id'] for race in main_info['rival_race_info_array']]
             for race in main_info['races']:
                 logger.info( "Race: " + str(race) )
@@ -690,26 +690,27 @@ class Preset():
                 if race_grade == 800: # Debut, ignore
                     logger.info(f"Race grade {race} is debut, ignoring")
                     continue
-                # race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_"
-                # if race_grade == 700:
-                #     race_img_url += "06.png" # Pre-OP
-                # elif race_grade == 400:
-                #     race_img_url += "02.png" # OP
-                # elif race_grade == 300:
-                #     race_img_url += "03.png" # G3
-                # elif race_grade == 200:
-                #     race_img_url += "04.png" # G2
-                # elif race_grade == 100:
-                #     race_img_url += "05.png" # G1
-                # else:
-                #     race_img_url += "07.png" # EX
-                race_img_url = self.get_thumb_url(program_id)
+                race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_"
+                if race_grade == 700:
+                    race_img_url += "06.png" # Pre-OP
+                elif race_grade == 400:
+                    race_img_url += "02.png" # OP
+                elif race_grade == 300:
+                    race_img_url += "03.png" # G3
+                elif race_grade == 200:
+                    race_img_url += "04.png" # G2
+                elif race_grade == 100:
+                    race_img_url += "05.png" # G1
+                else:
+                    race_img_url += "07.png" # EX
+                # race_img_url = self.get_thumb_url(program_id)
                 races_div += "<tr>"
-                races_div += f"<td><img src=\"{race_img_url}\" width=\"85\" height=\"42.5\"/></td>"
-                races_div += f"<td></td>"#TODO distance/surface (grey out if doesn't match your uma's aptitudes)
+                races_div += f"<td><img src=\"{race_img_url}\" width=\"51\" height=\"18.5\" style=\"vertical-align:middle;\"/></td>"
+                races_div += f"<td>{mdb.get_race_name_dict()[program_id]}</td>"
+                races_div += f"<td>{"Turf" if mdb.get_race_surface_dict()[program_id] == 1 else "Dirt"} - {mdb.get_race_distance_dict()[program_id]}m</td>"
                 races_div += f"<td>{self.grade_to_pts(race_grade)}</td>"
                 if program_id in rival_program_ids:
-                    races_div += f"<td><img src=\"{mant_imgs['rival']}\" width=\"32\" height=\"32\"/></td>"
+                    races_div += f"<td><img src=\"{mant_imgs['rival']}\" width=\"24\" height=\"42\"/></td>"
                 else:
                     races_div += f"<td></td>"
                 races_div += "</tr>"
