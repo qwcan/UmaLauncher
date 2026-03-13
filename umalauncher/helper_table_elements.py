@@ -675,14 +675,14 @@ class Preset():
         return html_text
 
     def generate_mant_races_div(self, main_info):
-        if main_info['turn'] <= 12:
-            # Ignore anything before the debut
+        if main_info['turn'] <= 12 or main_info['turn'] >= 73:
+            # Ignore anything before the debut and during Twinkle Start Climax
             return ""
         html_text = "<div style=\"width:50%;\">"
         races_div = ""
         mant_imgs = util.get_mant_image_dict()
 
-        races_div += "<div><table style=\"width:100%;white-space:nowrap;\"><thead><tr><th>Grade</th><th>Surface/Dist</th><th>Pt.</th><th>Rival</th></tr></thead><tbody>"
+        races_div += "<div><table style=\"width:100%;white-space:nowrap;\"><thead><tr><th>Grade</th><th>Surface/Dist</th><th>Rival</th></tr></thead><tbody>"
         rival_program_ids = [race['program_id'] for race in main_info['rival_race_info_array']]
         for race in main_info['races']:
             #logger.info( "Race: " + str(race) )
@@ -714,7 +714,8 @@ class Preset():
             #TODO: race names can be really long, are they needed? The thumbnail could be a compromise, but it's pretty big as well
             #races_div += f"<td>{mdb.get_race_name_dict()[program_id]}</td>"
             races_div += f"<td>{self.get_race_details_text(mdb.get_race_surface_dict()[program_id], mdb.get_race_distance_dict()[program_id], main_info['uma_aptitudes'])}</td>"
-            races_div += f"<td>{self.grade_to_pts(race_grade)}</td>"
+            #TODO: is the Pts column needed?
+            #races_div += f"<td>{self.grade_to_pts(race_grade)}</td>"
             if program_id in rival_program_ids:
                 races_div += f"<td><img src=\"{mant_imgs['rival']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/></td>"
             else:
