@@ -1,4 +1,5 @@
 import enum
+import os
 import traceback
 
 from loguru import logger
@@ -676,7 +677,7 @@ class Preset():
         mant_imgs = util.get_mant_image_dict()
 
         if len(main_info['races']) > 0:
-            races_div += "<div><table><thead><tr><th>Grade</th><th>Surface/Distance</th><th>Pt</th><th>Rival</th></tr></thead><tbody>"
+            races_div += "<div><table><thead><tr><th>Race</th><th>Surface/Distance</th><th>Pt</th><th>Rival</th></tr></thead><tbody>"
             rival_program_ids = [race['program_id'] for race in main_info['rival_race_info_array']]
             for race in main_info['races']:
                 logger.info( "Race: " + str(race) )
@@ -686,25 +687,25 @@ class Preset():
                 if not race_grade:
                     logger.error(f"Race grade not found for program id {program_id}")
                 logger.info(f"Race grade: {race_grade}")
-                race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_"
                 if race_grade == 800: # Debut, ignore
                     logger.info(f"Race grade {race} is debut, ignoring")
                     continue
-                if race_grade == 700:
-                    race_img_url += "06.png" # Pre-OP
-                elif race_grade == 400:
-                    race_img_url += "02.png" # OP
-                elif race_grade == 300:
-                    race_img_url += "03.png" # G3
-                elif race_grade == 200:
-                    race_img_url += "04.png" # G2
-                elif race_grade == 100:
-                    race_img_url += "05.png" # G1
-                else:
-                    race_img_url += "07.png" # EX
-                #TODO: Debut?
+                # race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_"
+                # if race_grade == 700:
+                #     race_img_url += "06.png" # Pre-OP
+                # elif race_grade == 400:
+                #     race_img_url += "02.png" # OP
+                # elif race_grade == 300:
+                #     race_img_url += "03.png" # G3
+                # elif race_grade == 200:
+                #     race_img_url += "04.png" # G2
+                # elif race_grade == 100:
+                #     race_img_url += "05.png" # G1
+                # else:
+                #     race_img_url += "07.png" # EX
+                race_img_url = self.get_thumb_url(program_id)
                 races_div += "<tr>"
-                races_div += f"<td><img src=\"{race_img_url}\" width=\"32\" height=\"32\"/></td>"
+                races_div += f"<td><img src=\"{race_img_url}\" width=\"85\" height=\"42.5\"/></td>"
                 races_div += f"<td></td>"#TODO distance/surface (grey out if doesn't match your uma's aptitudes)
                 races_div += f"<td>{self.grade_to_pts(race_grade)}</td>"
                 if program_id in rival_program_ids:
@@ -731,6 +732,22 @@ class Preset():
             return "100"  # G1
         else:
             return "-"
+
+    def get_thumb_url(self, program_id):
+        program_data = mdb.get_program_id_data(program_id)
+        if not program_data:
+            util.show_warning_box(f"Could not get program data for program_id {program_id}")
+            return None
+
+        if program_data['base_program_id'] != 0:
+            program_data = mdb.get_program_id_data(program_data['base_program_id'])
+
+        if not program_data:
+            util.show_warning_box(f"Could not get program data for program_id {program_id}")
+            return None
+
+        thumb_url = f"https://gametora.com/images/umamusume/{"en/" if 'IS_UL_GLOBAL' in os.environ else ""}race_banners/thum_race_rt_000_{str(program_data['race_instance_id'])[:4]}_00.png"
+        return thumb_url
 
     def to_dict(self):
         return {

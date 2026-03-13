@@ -675,7 +675,7 @@ def get_mant_image_dict(force=False):
     global mant_image_dict
 
     if force or not mant_image_dict:
-        logger.debug("Loading Beyond Dreams images...")
+        logger.debug("Loading MANT images...")
         mant_image_dict.update(assets_folder_images_to_dict("_assets/mant"))
     return mant_image_dict
 
