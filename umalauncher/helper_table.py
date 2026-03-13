@@ -127,7 +127,6 @@ class TrainingPartner():
         effective_bond = new_bond - starting_bond
         return max(effective_bond, 0)
 
-
 class HelperTable():
     carrotjuicer = None
     selected_preset = None
@@ -153,6 +152,11 @@ class HelperTable():
         if last_data:
             if 'reserved_race_array' not in data and 'reserved_race_array' in last_data:
                 data['reserved_race_array'] = last_data['reserved_race_array']
+            if 'race_condition_array' not in data and 'race_condition_array' in last_data:
+                data['race_condition_array'] = last_data['race_condition_array']
+            # Surely this won't cause any issues, right?
+            if 'home_info' not in data and 'home_info' in last_data:
+                data['home_info'] = last_data['home_info']
 
         if not 'home_info' in data:
             return None
