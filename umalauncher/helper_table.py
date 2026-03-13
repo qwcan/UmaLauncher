@@ -639,7 +639,7 @@ class HelperTable():
                 s_turn += month * 2
                 s_turn += half
                 s_turn += 1
-                thumb_url = f"https://gametora.com/images/umamusume/{"en/" if 'IS_UL_GLOBAL' in os.environ else "" }race_banners/thum_race_rt_000_{str(program_data['race_instance_id'])[:4]}_00.png"
+                thumb_url = f"https://gametora.com/images/umamusume/{'en/' if 'IS_UL_GLOBAL' in os.environ else '' }race_banners/thum_race_rt_000_{str(program_data['race_instance_id'])[:4]}_00.png"
 
                 scheduled_races.append({
                     "turn": s_turn,

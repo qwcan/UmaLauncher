@@ -612,7 +612,7 @@ class Preset():
         return f"<div id='gff' style='display:flex; flex-flow: column; justify-content:center; align-items:center; gap: 0.5rem;'>{internal}</div>"
 
     def generate_mant(self, main_info):
-        logger.info(main_info)
+        #logger.info(main_info)
         if main_info['scenario_id'] != 4:
             return ""
         html_text = ""
@@ -636,27 +636,27 @@ class Preset():
         mant_imgs = util.get_mant_image_dict()
 
         if len(main_info['user_item_info_array']) > 0:
-            inventory_div += "<div><table><thead><tr><th>Inv</th><th>Name</th><th>Effect</th><th>#</th></tr></thead><tbody>"
+            inventory_div += "<div><table style=\"width:100%;\"><thead><tr style=\"white-space:nowrap;\"><th>Inv</th><th>Effect</th><th>Qty</th></tr></thead><tbody>"
             for item in main_info['user_item_info_array']:
                 item_id = item['item_id']
                 inventory_div += "<tr>"
-                inventory_div += f"<td><img src=\"{mant_imgs[f'scenario_free_item_icon_{item_id:05}']}\" width=\"32\" height=\"32\"/></td>"
-                inventory_div += f"<td>{constants.MANT_ITEM_ID_TO_NAME[item_id]}</td>"
+                inventory_div += f"<td><img src=\"{mant_imgs[f'scenario_free_item_icon_{item_id:05}']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle\"/></td>"
+                #inventory_div += f"<td>{constants.MANT_ITEM_ID_TO_NAME[item_id]}</td>"
                 inventory_div += f"<td>{constants.MANT_ITEM_ID_TO_DESCRIPTION[item_id]}</td>"
                 inventory_div += f"<td>{item['num']}</td>"
                 inventory_div += "</tr>"
             inventory_div += "</tbody></div>"
 
         if len(main_info['pick_up_item_info_array']) > 0:
-            shop_div += f"<div><table><thead><tr style=\"white-space:nowrap;\"><th></th><th>Name</th><th>Effect</th><th><img src=\"{mant_imgs['coin']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/></th></tr></thead><tbody>"
+            shop_div += f"<div><table style=\"width:100%;\"><thead><tr style=\"white-space:nowrap;\"><th>Shop</th><th>Effect</th><th><img src=\"{mant_imgs['coin']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/></th></tr></thead><tbody>"
             for item in reversed(main_info['pick_up_item_info_array']): # This list is reversed for some reason???
                 if item['item_buy_num'] == item['limit_buy_count']:
                     # Sold out
                     continue
                 item_id = item['item_id']
                 shop_div += "<tr>"
-                shop_div += f"<td><img src=\"{mant_imgs[f'scenario_free_item_icon_{item_id:05}']}\" width=\"32\" height=\"32\"/></td>"
-                shop_div += f"<td>{constants.MANT_ITEM_ID_TO_NAME[item_id]}</td>"
+                shop_div += f"<td><img src=\"{mant_imgs[f'scenario_free_item_icon_{item_id:05}']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle\"/></td>"
+                #shop_div += f"<td>{constants.MANT_ITEM_ID_TO_NAME[item_id]}</td>"
                 shop_div += f"<td>{constants.MANT_ITEM_ID_TO_DESCRIPTION[item_id]}</td>"
                 shop_div += f"<td>{item['coin_num']}</td>"
                 shop_div += "</tr>"
@@ -678,18 +678,18 @@ class Preset():
 
         # TODO: don't remove the table entirely if no races are available (happens when race results come back)
         if len(main_info['races']) > 0:
-            races_div += "<div><table><thead><tr><th>Grade</th><th>Race</th><th>Surface/Dist</th><th>Pt</th><th>Rival</th></tr></thead><tbody>"
+            races_div += "<div><table style=\"width:100%;\"><thead><tr style=\"white-space:nowrap;\"><th>Grade</th><th>Surface/Dist</th><th>Pt.</th><th>Rival</th></tr></thead><tbody>"
             rival_program_ids = [race['program_id'] for race in main_info['rival_race_info_array']]
             for race in main_info['races']:
-                logger.info( "Race: " + str(race) )
+                #logger.info( "Race: " + str(race) )
                 program_id = race['program_id']
                 race_grade = mdb.get_program_id_grade(program_id)
 
                 if not race_grade:
                     logger.error(f"Race grade not found for program id {program_id}")
-                logger.info(f"Race grade: {race_grade}")
+                #logger.info(f"Race grade: {race_grade}")
                 if race_grade == 800: # Debut, ignore
-                    logger.info(f"Race grade {race} is debut, ignoring")
+                    logger.debug(f"Race grade {race} is debut, ignoring")
                     continue
                 race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_"
                 if race_grade == 700:
@@ -707,8 +707,9 @@ class Preset():
                 # race_img_url = self.get_thumb_url(program_id)
                 races_div += "<tr>"
                 races_div += f"<td><img src=\"{race_img_url}\" width=\"51\" height=\"18.5\" style=\"vertical-align:middle;\"/></td>"
-                races_div += f"<td>{mdb.get_race_name_dict()[program_id]}</td>"
-                races_div += f"<td>{"Turf" if mdb.get_race_surface_dict()[program_id] == 1 else "Dirt"} - {mdb.get_race_distance_dict()[program_id]}m</td>"
+                #TODO: race names can be rea
+                #races_div += f"<td>{mdb.get_race_name_dict()[program_id]}</td>"
+                races_div += f"<td>{'Turf' if mdb.get_race_surface_dict()[program_id] == 1 else 'Dirt'} - {mdb.get_race_distance_dict()[program_id]}m</td>"
                 races_div += f"<td>{self.grade_to_pts(race_grade)}</td>"
                 if program_id in rival_program_ids:
                     races_div += f"<td><img src=\"{mant_imgs['rival']}\" width=\"24\" height=\"42\"/></td>"
@@ -748,7 +749,7 @@ class Preset():
             util.show_warning_box(f"Could not get program data for program_id {program_id}")
             return None
 
-        thumb_url = f"https://gametora.com/images/umamusume/{"en/" if 'IS_UL_GLOBAL' in os.environ else ""}race_banners/thum_race_rt_000_{str(program_data['race_instance_id'])[:4]}_00.png"
+        thumb_url = f"https://gametora.com/images/umamusume/{'en/' if 'IS_UL_GLOBAL' in os.environ else ''}race_banners/thum_race_rt_000_{str(program_data['race_instance_id'])[:4]}_00.png"
         return thumb_url
 
     def to_dict(self):
