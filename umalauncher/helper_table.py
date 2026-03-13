@@ -774,10 +774,10 @@ class HelperTable():
                 coin_num = free_data['coin_num']
             # Shop (shop_item_id, item_id, coin_num, original_coin_num, item_buy_num (1=sold out), limit_buy_count, limit_turn)
             # TODO: how to get turns left?
-            if 'pick_up_item_info_array' in free_data:
+            if 'pick_up_item_info_array' in free_data and free_data['pick_up_item_info_array'] is not None:
                 pick_up_item_info_array = free_data['pick_up_item_info_array']
             # Inventory (item_id, num)
-            if 'user_item_info_array' in free_data:
+            if 'user_item_info_array' in free_data and free_data['user_item_info_array'] is not None:
                 user_item_info_array = free_data['user_item_info_array']
             # List of rivals for this turn (program_id, chara_id)
             if 'rival_race_info_array' in free_data:
