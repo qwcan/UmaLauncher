@@ -615,8 +615,6 @@ class Preset():
         #logger.info(main_info)
         if main_info['scenario_id'] != 4:
             return ""
-        #html_text = ""
-        mant_imgs = util.get_mant_image_dict()
 
         # TODO: is a coin display needed, or is it sufficient to just show which items can be bought?
         #if main_info['coin_num'] > 0:
