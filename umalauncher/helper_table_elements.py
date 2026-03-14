@@ -639,6 +639,9 @@ class Preset():
         mant_imgs = util.get_mant_image_dict()
         items_html = ""
 
+        # Build inventory lookup: item_id -> count owned
+        inventory = {inv['item_id']: inv['num'] for inv in main_info.get('user_item_info_array', [])}
+
         for item in reversed(main_info['pick_up_item_info_array']):
             if item['item_buy_num'] == item['limit_buy_count']:
                 # Sold out
@@ -679,19 +682,57 @@ class Preset():
                     f'{modifier}</div>'
                 )
 
+            # Owned count badge
+            owned_badge = ""
+            owned_count = inventory.get(item_id, 0)
+            if owned_count > 0:
+                owned_badge = (
+                    f'<div style="position:absolute;top:-2px;left:-2px;'
+                    f'background:rgba(0,0,0,0.7);color:#7bed9f;font-size:0.55rem;font-weight:700;'
+                    f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
+                    f'+{owned_count}</div>'
+                )
+
             items_html += (
                 f'<div title="{description}" style="position:relative;flex:0 0 auto;'
                 f'width:36px;height:36px;cursor:default;">'
                 f'<img src="{icon_src}" width="32" height="32" '
                 f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"/>'
-                f'{turns_badge}{coin_badge}{modifier_label}'
+                f'{turns_badge}{coin_badge}{modifier_label}{owned_badge}'
                 f'</div>'
             )
+
+        # Coin badge at the end
+        coin_src = mant_imgs.get('coin', '')
+        coin_count = main_info['coin_num']
+        sale_indicator = ""
+        sale_val = main_info.get('sale_value', 0)
+        if sale_val > 0:
+            sale_indicator = (
+                f'<div style="position:absolute;top:-4px;right:-6px;'
+                'background:linear-gradient(135deg,#ff6b8f,#ff3b6f);'
+                'color:#fff;font-weight:700;font-size:0.5rem;line-height:1;'
+                'padding:2px 3px;border-radius:4px;'
+                'box-shadow:0 1px 3px rgba(0,0,0,.3);z-index:10;'
+                f'pointer-events:none;white-space:nowrap;">{sale_val}%</div>'
+            )
+        coin_badge_html = (
+            f'<div style="position:relative;flex:0 0 auto;'
+            f'width:36px;height:36px;cursor:default;">'
+            f'<img src="{coin_src}" width="32" height="32" '
+            f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"/>'
+            f'<div style="position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);'
+            f'background:rgba(0,0,0,0.7);color:#ffd700;font-size:0.6rem;font-weight:700;'
+            f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
+            f'{coin_count}</div>'
+            f'{sale_indicator}'
+            f'</div>'
+        )
 
         return (
             f'<div style="display:flex;flex-wrap:wrap;justify-content:center;'
             f'gap:0.4rem;width:100%;padding:0.2rem 0;">'
-            f'{items_html}</div>'
+            f'{items_html}{coin_badge_html}</div>'
         )
 
     def generate_mant_races_div(self, main_info):
@@ -751,7 +792,7 @@ class Preset():
         turns_left = 0
         if item['limit_turn'] == 0:
             # Normal shop item, refreshes every six turns
-            turns_left = 6 - ((turn - 12) % 6) + 1
+            turns_left = 6 - ((turn - 13) % 6)
         else:
             turns_left = item['limit_turn'] - turn + 1 # limit_turn is the last turn it can be bought
         return turns_left
