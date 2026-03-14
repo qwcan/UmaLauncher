@@ -691,7 +691,7 @@ class Preset():
             )
 
         return (
-            f'<div style="display:flex;flex-wrap:nowrap;justify-content:center;'
+            f'<div style="display:flex;flex-wrap:wrap;justify-content:center;'
             f'gap:0.4rem;width:100%;padding:0.2rem 0;">'
             f'{items_html}</div>'
         )
