@@ -773,11 +773,14 @@ class HelperTable():
         user_item_info_array = []
         rival_race_info_array = []
         coin_num = -1
+        sale_value = 0
         uma_aptitudes = {}
         if "free_data_set" in data:
             free_data = data['free_data_set']
             if 'coin_num' in free_data:
                 coin_num = free_data['coin_num']
+            if 'sale_value' in free_data:
+                sale_value = free_data['sale_value']
             # Shop (shop_item_id, item_id, coin_num, original_coin_num, item_buy_num (1=sold out), limit_buy_count, limit_turn)
             # TODO: how to get turns left?
             if 'pick_up_item_info_array' in free_data and free_data['pick_up_item_info_array'] is not None:
@@ -837,7 +840,8 @@ class HelperTable():
             'pick_up_item_info_array': pick_up_item_info_array,
             'user_item_info_array': user_item_info_array,
             'rival_race_info_array': rival_race_info_array,
-            'coin_num': coin_num
+            'coin_num': coin_num,
+            'sale_value': sale_value
         }
 
         # Update preset if needed.
