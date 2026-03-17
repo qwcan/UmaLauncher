@@ -642,6 +642,20 @@ class Preset():
 
         # Build inventory lookup: item_id -> count owned
         inventory = {inv['item_id']: inv['num'] for inv in main_info.get('user_item_info_array', [])}
+        num_hammers = inventory.get(11001, 0) + inventory.get(11002, 0)
+        for item in main_info['pick_up_item_info_array']:
+            if item['item_buy_num'] == item['limit_buy_count']:
+                continue
+            if item['item_id'] == 11001 or item['item_id'] == 11002:
+                num_hammers += 1
+        races_left = 999
+        if main_info['turn'] >= 77:
+            races_left = 1
+        elif main_info['turn'] >= 75:
+            races_left = 2
+        elif main_info['turn'] >= 73:
+            races_left = 3
+        #Inventory
         for item in main_info.get('user_item_info_array', []):
             item_id = item['item_id']
             icon_src = mant_imgs.get(f'scenario_free_item_icon_{item_id:05}', '')
@@ -671,11 +685,13 @@ class Preset():
                 f'<div title="{description}" style="position:relative;flex:0 0 auto;'
                 f'width:36px;height:36px;cursor:default;">'
                 f'<img src="{icon_src}" width="32" height="32" '
-                f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"/>'
+                f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'
+                f'{"box-shadow: 0px 0px 10px 7px rgba(255,0,0,0.65); border-radius:4px;\"/>" if num_hammers >= races_left and (item_id == 11001 or item_id == 11002) else "\"/>"}'
                 f'{modifier_label}{owned_badge}'
                 f'</div>'
             )
 
+        #Shop
         for item in reversed(main_info['pick_up_item_info_array']):
             if item['item_buy_num'] == item['limit_buy_count']:
                 # Sold out
@@ -718,20 +734,21 @@ class Preset():
 
             # Owned count badge
             owned_badge = ""
-            owned_count = inventory.get(item_id, 0)
-            if owned_count > 0:
-                owned_badge = (
-                    f'<div style="position:absolute;top:-2px;left:-2px;'
-                    f'background:rgba(0,0,0,0.7);color:#7bed9f;font-size:0.55rem;font-weight:700;'
-                    f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
-                    f'+{owned_count}</div>'
-                )
+            # owned_count = inventory.get(item_id, 0)
+            # if owned_count > 0:
+            #     owned_badge = (
+            #         f'<div style="position:absolute;top:-2px;left:-2px;'
+            #         f'background:rgba(0,0,0,0.7);color:#7bed9f;font-size:0.55rem;font-weight:700;'
+            #         f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
+            #         f'+{owned_count}</div>'
+            #     )
 
             items_html += (
                 f'<div title="{description}" style="position:relative;flex:0 0 auto;'
                 f'width:36px;height:36px;cursor:default;">'
                 f'<img src="{icon_src}" width="32" height="32" '
-                f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"/>'
+                f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'
+                f'{"box-shadow: 0px 0px 10px 7px rgba(255,0,0,0.65); border-radius:4px;\"/>" if num_hammers >= races_left and (item_id == 11001 or item_id == 11002) else "\"/>"}'
                 f'{turns_badge}{coin_badge}{modifier_label}{owned_badge}'
                 f'</div>'
             )
@@ -808,7 +825,8 @@ class Preset():
             races_div += "<tr>"
             races_div += f"<td><img src=\"{race_img_url}\" width=\"51\" height=\"18.5\" style=\"vertical-align:middle;\"/></td>"
             #TODO: race names can be really long, are they needed? The thumbnail could be a compromise, but it's pretty big as well
-            races_div += f"<td>{mdb.get_race_name_dict()[program_id]}</td>"
+            race_aptitudes = self._get_race_aptitudes(mdb.get_race_surface_dict()[program_id], mdb.get_race_distance_dict()[program_id], main_info['uma_aptitudes'])
+            races_div += f"<td { 'style=\"font-weight:bold;\"' if race_aptitudes[0] and race_aptitudes[1] else ''}>{mdb.get_race_name_dict()[program_id]}</td>"
             races_div += f"<td>{self.get_race_details_text(mdb.get_race_surface_dict()[program_id], mdb.get_race_distance_dict()[program_id], main_info['uma_aptitudes'])}</td>"
             if program_id in rival_program_ids:
                 races_div += f"<td><img src=\"{mant_imgs['rival']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/></td>"
@@ -834,26 +852,18 @@ class Preset():
         turns_left = self._get_mant_turns_left(item, turn)
         return f"<div style=\"{'color:red;' if turns_left == 1 else 'color:orange;' if turns_left == 2 else ''}\">{turns_left}</div>"
 
-    def get_race_details_text(self, surface, distance, uma_aptitudes):
+    def _get_race_aptitudes(self, surface, distance, uma_aptitudes):
         # C or higher is "good"
         #
         # 1=G, 2=F, etc.
-        surface_text = ""
         good_surface = False
-        distance_text = ""
         good_distance = False
         if surface == 1:
-            surface_text = "Turf"
             if uma_aptitudes["proper_ground_turf"] >= 5:
                 good_surface = True
         else:
-            surface_text = "Dirt"
             if uma_aptitudes["proper_ground_dirt"] >= 5:
                 good_surface = True
-        if good_surface:
-            surface_text = f"<div style=\"color:lightgreen;\">{surface_text}</div>"
-        else:
-            surface_text = f"<div style=\"color:orange;\">{surface_text}</div>"
 
         if distance <= 1400:
             if uma_aptitudes["proper_distance_short"] >= 5:
@@ -867,6 +877,21 @@ class Preset():
         else:
             if uma_aptitudes["proper_distance_long"] >= 5:
                 good_distance = True
+
+        return good_surface, good_distance
+
+    def get_race_details_text(self, surface, distance, uma_aptitudes):
+        surface_text = ""
+        good_surface, good_distance = self._get_race_aptitudes(surface, distance, uma_aptitudes)
+        distance_text = ""
+        if surface == 1:
+            surface_text = "Turf"
+        else:
+            surface_text = "Dirt"
+        if good_surface:
+            surface_text = f"<div style=\"color:lightgreen;\">{surface_text}</div>"
+        else:
+            surface_text = f"<div style=\"color:orange;\">{surface_text}</div>"
 
         if good_distance:
             distance_text = f"<div style=\"color:lightgreen;\">{distance}m</div>"
