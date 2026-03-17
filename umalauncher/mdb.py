@@ -382,7 +382,7 @@ def get_race_name_dict(force=False):
     if force or not RACE_NAME_DICT:
         with Connection() as (_, cursor):
             cursor.execute(
-                """SELECT smp.id, text  FROM single_mode_program smp JOIN text_data td on td."index" = smp.race_instance_id WHERE category = 28"""
+                """SELECT smp.id, text FROM single_mode_program smp JOIN text_data td on td."index" = smp.race_instance_id WHERE category = 28"""
             )
             rows = cursor.fetchall()
 

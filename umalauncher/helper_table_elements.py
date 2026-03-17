@@ -638,9 +638,43 @@ class Preset():
 
         mant_imgs = util.get_mant_image_dict()
         items_html = ""
+        inv_html = ""
 
         # Build inventory lookup: item_id -> count owned
         inventory = {inv['item_id']: inv['num'] for inv in main_info.get('user_item_info_array', [])}
+        for item in main_info.get('user_item_info_array', []):
+            item_id = item['item_id']
+            icon_src = mant_imgs.get(f'scenario_free_item_icon_{item_id:05}', '')
+            description = constants.MANT_ITEM_ID_TO_DESCRIPTION.get(item_id, '')
+            modifier = constants.MANT_ITEM_ID_TO_MODIFIER.get(item_id, '')
+
+            # Modifier label for shared-icon items (megaphones, cleat hammers)
+            modifier_label = ""
+            if modifier:
+                modifier_label = (
+                    f'<div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);'
+                    f'background:rgba(0,0,0,0.75);color:#ffd700;font-size:0.5rem;font-weight:700;'
+                    f'padding:0 2px;border-radius:3px;white-space:nowrap;z-index:2;line-height:1.2;">'
+                    f'{modifier}</div>'
+                )
+
+            # Owned count badge
+            owned_count = inventory.get(item_id, 0)
+            owned_badge = (
+                f'<div style="position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);'
+                f'background:rgba(0,0,0,0.7);color:#7bed9f;font-size:0.55rem;font-weight:700;'
+                f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
+                f'x{owned_count}</div>'
+            )
+
+            inv_html += (
+                f'<div title="{description}" style="position:relative;flex:0 0 auto;'
+                f'width:36px;height:36px;cursor:default;">'
+                f'<img src="{icon_src}" width="32" height="32" '
+                f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"/>'
+                f'{modifier_label}{owned_badge}'
+                f'</div>'
+            )
 
         for item in reversed(main_info['pick_up_item_info_array']):
             if item['item_buy_num'] == item['limit_buy_count']:
@@ -732,7 +766,10 @@ class Preset():
         return (
             f'<div style="display:flex;flex-wrap:wrap;justify-content:center;'
             f'gap:0.4rem;width:100%;padding:0.2rem 0;">'
-            f'{items_html}{coin_badge_html}</div>'
+            f'{inv_html}</div>'
+            f'<div style="display:flex;flex-wrap:wrap;justify-content:center;'
+            f'gap:0.4rem;width:100%;padding:0.2rem 0;">'
+            f'{coin_badge_html}{items_html}</div>'
         )
 
     def generate_mant_races_div(self, main_info):
@@ -743,7 +780,7 @@ class Preset():
         races_div = ""
         mant_imgs = util.get_mant_image_dict()
 
-        races_div += "<div><table style=\"width:100%;white-space:nowrap;\"><thead><tr><th>Grade</th><th>Surface/Dist</th><th>Rival</th></tr></thead><tbody>"
+        races_div += "<div><table style=\"width:100%;white-space:nowrap;\"><thead><tr><th>Grade</th><th>Name</th><th>Surface/Dist</th><th>Rival</th></tr></thead><tbody>"
         rival_program_ids = [race['program_id'] for race in main_info['rival_race_info_array']]
         for race in main_info['races']:
             #logger.info( "Race: " + str(race) )
@@ -752,9 +789,7 @@ class Preset():
 
             if not race_grade:
                 logger.error(f"Race grade not found for program id {program_id}")
-            #logger.info(f"Race grade: {race_grade}")
             if race_grade == 800 or race_grade == 700 or race_grade == 400: # Debut/OP/Pre-OP, ignore
-                #logger.debug(f"Race grade {race} is debut, ignoring")
                 continue
             race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_"
             if race_grade == 700:
@@ -773,10 +808,8 @@ class Preset():
             races_div += "<tr>"
             races_div += f"<td><img src=\"{race_img_url}\" width=\"51\" height=\"18.5\" style=\"vertical-align:middle;\"/></td>"
             #TODO: race names can be really long, are they needed? The thumbnail could be a compromise, but it's pretty big as well
-            #races_div += f"<td>{mdb.get_race_name_dict()[program_id]}</td>"
+            races_div += f"<td>{mdb.get_race_name_dict()[program_id]}</td>"
             races_div += f"<td>{self.get_race_details_text(mdb.get_race_surface_dict()[program_id], mdb.get_race_distance_dict()[program_id], main_info['uma_aptitudes'])}</td>"
-            #TODO: is the Pts column needed?
-            #races_div += f"<td>{self.grade_to_pts(race_grade)}</td>"
             if program_id in rival_program_ids:
                 races_div += f"<td><img src=\"{mant_imgs['rival']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/></td>"
             else:

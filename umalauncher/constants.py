@@ -299,6 +299,7 @@ ONSEN_KEY_TO_ORDER = {
     106: 5,
 }
 
+# Names used in UmaTL
 MANT_ITEM_ID_TO_NAME = {
     1001: "Notepad of Speed",
     1002: "Notepad of Stamina",
@@ -354,6 +355,64 @@ MANT_ITEM_ID_TO_NAME = {
     11002: "Horseshoe Hammer (Superior)",
     11003: "Three-Color Penlight"
 }
+
+# Names used in global
+MANT_ITEM_ID_TO_NAME_GLB = {
+    1001: "Speed Notepad",
+    1002: "Stamina Notepad",
+    1003: "Power Notepad",
+    1004: "Guts Notepad",
+    1005: "Wit Notepad",
+    1101: "Speed Manual",
+    1102: "Stamina Manual",
+    1103: "Power Manual",
+    1104: "Guts Manual",
+    1105: "Wit Manual",
+    1201: "Speed Scroll",
+    1202: "Stamina Scroll",
+    1203: "Power Scroll",
+    1204: "Guts Scroll",
+    1205: "Wit Scroll",
+    2001: "Vita 20",
+    2002: "Vita 40",
+    2003: "Vita 65",
+    2101: "Royal Kale Juice",
+    2201: "Energy Drink MAX",
+    2202: "Energy Drink MAX EX",
+    2301: "Plain Cupcake",
+    2302: "Berry Sweet Cupcake",
+    3001: "Yummy Cat Food",
+    3101: "Grilled Carrots",
+    4001: "Pretty Mirror",
+    4002: "Reporter's Binoculars",
+    4003: "Master Practice Guide",
+    4004: "Scholar's Hat",
+    4101: "Fluffy Pillow",
+    4102: "Pocket Planner",
+    4103: "Rich Hand Cream",
+    4104: "Smart Scale",
+    4105: "Aroma Diffuser",
+    4106: "Practice Drills DVD",
+    4201: "Miracle Cure",
+    5001: "Speed Training Application",
+    5002: "Stamina Training Application",
+    5003: "Power Training Application",
+    5004: "Guts Training Application",
+    5005: "Wit Training Application",
+    7001: "Reset Whistle",
+    8001: "Coaching Megaphone",
+    8002: "Motivating Megaphone",
+    8003: "Empowering Megaphone",
+    9001: "Speed Ankle Weights",
+    9002: "Stamina Ankle Weights",
+    9003: "Power Ankle Weights",
+    9004: "Guts Ankle Weights",
+    10001:"Good-Luck Charm",
+    11001:"Artisan Cleat Hammer",
+    11002:"Master Cleat Hammer",
+    11003:"Glow Sticks"
+}
+
 
 MANT_ITEM_ID_TO_DESCRIPTION = {
     1001: "Increase speed by 3 \n※Only half effect over 1200",
