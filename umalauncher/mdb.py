@@ -375,6 +375,53 @@ def get_chara_name_dict(force=False):
     
     return CHARA_NAME_DICT
 
+
+RACE_NAME_DICT = {}
+def get_race_name_dict(force=False):
+    global RACE_NAME_DICT
+    if force or not RACE_NAME_DICT:
+        with Connection() as (_, cursor):
+            cursor.execute(
+                """SELECT smp.id, text FROM single_mode_program smp JOIN text_data td on td."index" = smp.race_instance_id WHERE category = 28"""
+            )
+            rows = cursor.fetchall()
+
+        RACE_NAME_DICT.update({row[0]: row[1] for row in rows})
+
+    return RACE_NAME_DICT
+
+
+RACE_DISTANCE_DICT = {}
+def get_race_distance_dict(force=False):
+    global RACE_DISTANCE_DICT
+    if force or not RACE_DISTANCE_DICT:
+        with Connection() as (_, cursor):
+            cursor.execute(
+                """SELECT smp.id, rcs.distance FROM single_mode_program smp JOIN race_instance ri on smp.race_instance_id = ri.id JOIN race r on ri.race_id = r.id JOIN race_course_set rcs on r.course_set = rcs.id"""
+            )
+            rows = cursor.fetchall()
+
+        RACE_DISTANCE_DICT.update({row[0]: row[1] for row in rows})
+
+    return RACE_DISTANCE_DICT
+
+
+RACE_SURFACE_DICT = {}
+def get_race_surface_dict(force=False):
+    global RACE_SURFACE_DICT
+    if force or not RACE_SURFACE_DICT:
+        with Connection() as (_, cursor):
+            cursor.execute(
+                """SELECT smp.id, rcs.ground FROM single_mode_program smp JOIN race_instance ri on smp.race_instance_id = ri.id JOIN race r on ri.race_id = r.id JOIN race_course_set rcs on r.course_set = rcs.id"""
+            )
+            rows = cursor.fetchall()
+
+        RACE_SURFACE_DICT.update({row[0]: row[1] for row in rows})
+
+    return RACE_SURFACE_DICT
+
+
+
 MANT_ITEM_STRING_DICT = {}
 def get_mant_item_string_dict(force=False):
     global MANT_ITEM_STRING_DICT
@@ -439,18 +486,30 @@ def get_program_id_grade(program_id):
 
     return row[0]
 
+
+PROGRAM_ID_DICT = {}
+def get_program_id_dict(force=False):
+    global PROGRAM_ID_DICT
+    if not PROGRAM_ID_DICT or force:
+        with Connection() as (_, cursor):
+            try:
+                cursor.execute(
+                    """SELECT * FROM single_mode_program;"""
+                )
+                rows = cursor.fetchall()
+                columns = get_columns(cursor)
+                if not rows:
+                    temp = None
+                else:
+                    races = rows_to_dict(rows, columns)
+                    PROGRAM_ID_DICT.update( { race["id"] : race for race in races } )
+            except sqlite3.OperationalError as e:
+                logger.error( f"get_program_id_dict failed: {e}\n{traceback.format_exc()}")
+
+    return PROGRAM_ID_DICT
+
 def get_program_id_data(program_id):
-    with Connection() as (_, cursor):
-        cursor.execute(
-            """SELECT * FROM single_mode_program WHERE id = ?;""",
-            (program_id,)
-        )
-        rows = cursor.fetchall()
-        columns = get_columns(cursor)
-    
-    if not rows:
-        return None
-    return rows_to_dict(rows, columns)[0]
+    return get_program_id_dict().get(program_id)
 
 SKILL_ID_DICT = {}
 def get_skill_id_dict(force=False):
@@ -689,7 +748,11 @@ UPDATE_FUNCS = [
     get_group_card_effect_ids,
     get_skill_id_dict,
     get_scouting_score_to_rank_dict,
-    get_single_mode_unique_chara_dict
+    get_single_mode_unique_chara_dict,
+    get_program_id_dict,
+    get_race_name_dict,
+    get_race_distance_dict,
+    get_race_surface_dict
 ]
 
 def has_carotene_table():

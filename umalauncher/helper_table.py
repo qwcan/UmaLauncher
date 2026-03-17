@@ -1,4 +1,6 @@
 import copy
+import os
+
 from loguru import logger
 import mdb
 import util
@@ -125,7 +127,6 @@ class TrainingPartner():
         effective_bond = new_bond - starting_bond
         return max(effective_bond, 0)
 
-
 class HelperTable():
     carrotjuicer = None
     selected_preset = None
@@ -151,6 +152,11 @@ class HelperTable():
         if last_data:
             if 'reserved_race_array' not in data and 'reserved_race_array' in last_data:
                 data['reserved_race_array'] = last_data['reserved_race_array']
+            if 'race_condition_array' not in data and 'race_condition_array' in last_data:
+                data['race_condition_array'] = last_data['race_condition_array']
+            # Surely this won't cause any issues, right?
+            if 'home_info' not in data and 'home_info' in last_data:
+                data['home_info'] = last_data['home_info']
 
         if not 'home_info' in data:
             return None
@@ -618,7 +624,6 @@ class HelperTable():
         scheduled_races = []
         if 'reserved_race_array' in data:
             for race_data in data['reserved_race_array'][0]['race_array']:
-                # TODO: Maybe cache the mdb data for all race programs?
                 program_data = mdb.get_program_id_data(race_data['program_id'])
                 if not program_data:
                     util.show_warning_box(f"Could not get program data for program_id {race_data['program_id']}")
@@ -638,7 +643,7 @@ class HelperTable():
                 s_turn += month * 2
                 s_turn += half
                 s_turn += 1
-                thumb_url = f"https://gametora.com/images/umamusume/race_banners/thum_race_rt_000_{str(program_data['race_instance_id'])[:4]}_00.png"
+                thumb_url = f"https://gametora.com/images/umamusume/{'en/' if 'IS_UL_GLOBAL' in os.environ else '' }race_banners/thum_race_rt_000_{str(program_data['race_instance_id'])[:4]}_00.png"
 
                 scheduled_races.append({
                     "turn": s_turn,
@@ -762,6 +767,40 @@ class HelperTable():
                 del command_info[constants.COMMAND_ID_TO_KEY[3101]]
 
 
+        # MANT
+        races = []
+        pick_up_item_info_array = []
+        user_item_info_array = []
+        rival_race_info_array = []
+        coin_num = -1
+        sale_value = 0
+        uma_aptitudes = {}
+        if "free_data_set" in data:
+            free_data = data['free_data_set']
+            if 'coin_num' in free_data:
+                coin_num = free_data['coin_num']
+            if 'sale_value' in free_data:
+                sale_value = free_data['sale_value']
+            # Shop (shop_item_id, item_id, coin_num, original_coin_num, item_buy_num (1=sold out), limit_buy_count, limit_turn)
+            if 'pick_up_item_info_array' in free_data and free_data['pick_up_item_info_array'] is not None:
+                pick_up_item_info_array = free_data['pick_up_item_info_array']
+            # Inventory (item_id, num)
+            if 'user_item_info_array' in free_data and free_data['user_item_info_array'] is not None:
+                user_item_info_array = free_data['user_item_info_array']
+            # List of rivals for this turn (program_id, chara_id)
+            if 'rival_race_info_array' in free_data:
+                rival_race_info_array = free_data['rival_race_info_array']
+        if "race_condition_array" in data:
+            races = data['race_condition_array']
+        if "chara_info" in data:
+            chara_info = data['chara_info']
+            uma_aptitudes["proper_ground_turf"] = chara_info['proper_ground_turf']
+            uma_aptitudes["proper_ground_dirt"] = chara_info['proper_ground_dirt']
+            uma_aptitudes["proper_distance_short"] = chara_info['proper_distance_short']
+            uma_aptitudes["proper_distance_mile"] = chara_info['proper_distance_mile']
+            uma_aptitudes["proper_distance_middle"] = chara_info['proper_distance_middle']
+            uma_aptitudes["proper_distance_long"] = chara_info['proper_distance_long']
+
 
 
 
@@ -794,7 +833,14 @@ class HelperTable():
             "gff_vegetables": gff_vegetables,
             "gff_field_point": gff_field_point,
             "eval_dict": eval_dict,
-            "all_commands": all_commands
+            "all_commands": all_commands,
+            'races': races,
+            'uma_aptitudes': uma_aptitudes,
+            'pick_up_item_info_array': pick_up_item_info_array,
+            'user_item_info_array': user_item_info_array,
+            'rival_race_info_array': rival_race_info_array,
+            'coin_num': coin_num,
+            'sale_value': sale_value
         }
 
         # Update preset if needed.

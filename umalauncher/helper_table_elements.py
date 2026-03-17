@@ -1,10 +1,12 @@
 import enum
+import os
 import traceback
 
 from loguru import logger
 import gui
 import util
 import constants
+import mdb
 import settings_elements as se
 
 TABLE_HEADERS = {
@@ -240,6 +242,10 @@ class Preset():
             html_elements.append(self.generate_gff(main_info))
 
         html_elements.append(self.generate_table(command_info, main_info))
+
+        if self.settings.scenario_specific_enabled.value:
+            # Put MANT after the table
+            html_elements.append(self.generate_mant(main_info))
 
         # html_elements.append("""<button id="btn-skill-window" onclick="window.await_skill_window();">Open Skills Window</button>""")
 
@@ -605,7 +611,318 @@ class Preset():
         
         return f"<div id='gff' style='display:flex; flex-flow: column; justify-content:center; align-items:center; gap: 0.5rem;'>{internal}</div>"
 
-        
+    def generate_mant(self, main_info):
+        if main_info['scenario_id'] != 4:
+            return ""
+
+        shop_div = self.generate_mant_shop_div(main_info)
+        races_div = self.generate_mant_races_div(main_info)
+
+        html_text = "<div style=\"display:flex;flex-direction:column;align-items:center;gap:0.5rem;width:100%;\">"
+        html_text += shop_div
+        html_text += races_div
+        html_text += "</div>"
+        return html_text
+
+    def generate_mant_shop_div(self, main_info):
+        if main_info['turn'] <= 12:
+            # Ignore anything before the debut
+            return ""
+        if len(main_info['pick_up_item_info_array']) == 0:
+            return ""
+
+        mant_imgs = util.get_mant_image_dict()
+        items_html = ""
+        inv_html = ""
+
+        # Build inventory lookup: item_id -> count owned
+        inventory = {inv['item_id']: inv['num'] for inv in main_info.get('user_item_info_array', [])}
+        num_hammers = inventory.get(11001, 0) + inventory.get(11002, 0)
+        for item in main_info['pick_up_item_info_array']:
+            if item['item_buy_num'] == item['limit_buy_count']:
+                continue
+            if item['item_id'] == 11001 or item['item_id'] == 11002:
+                num_hammers += 1
+        races_left = 999
+        if main_info['turn'] >= 77:
+            races_left = 1
+        elif main_info['turn'] >= 75:
+            races_left = 2
+        elif main_info['turn'] >= 73:
+            races_left = 3
+        #Inventory
+        for item in main_info.get('user_item_info_array', []):
+            item_id = item['item_id']
+            icon_src = mant_imgs.get(f'scenario_free_item_icon_{item_id:05}', '')
+            description = constants.MANT_ITEM_ID_TO_DESCRIPTION.get(item_id, '')
+            modifier = constants.MANT_ITEM_ID_TO_MODIFIER.get(item_id, '')
+
+            # Modifier label for shared-icon items (megaphones, cleat hammers)
+            modifier_label = ""
+            if modifier:
+                modifier_label = (
+                    f'<div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);'
+                    f'background:rgba(0,0,0,0.75);color:#ffd700;font-size:0.5rem;font-weight:700;'
+                    f'padding:0 2px;border-radius:3px;white-space:nowrap;z-index:2;line-height:1.2;">'
+                    f'{modifier}</div>'
+                )
+
+            # Owned count badge
+            owned_count = inventory.get(item_id, 0)
+            owned_badge = (
+                f'<div style="position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);'
+                f'background:rgba(0,0,0,0.7);color:#7bed9f;font-size:0.55rem;font-weight:700;'
+                f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
+                f'x{owned_count}</div>'
+            )
+
+            inv_html += (
+                f'<div title="{description}" style="position:relative;flex:0 0 auto;'
+                f'width:36px;height:36px;cursor:default;">'
+                f'<img src="{icon_src}" width="32" height="32" '
+                f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'
+                f'{"box-shadow: 0px 0px 10px 7px rgba(255,0,0,0.65); border-radius:4px;\"/>" if num_hammers >= races_left and (item_id == 11001 or item_id == 11002) else "\"/>"}'
+                f'{modifier_label}{owned_badge}'
+                f'</div>'
+            )
+
+        #Shop
+        for item in reversed(main_info['pick_up_item_info_array']):
+            if item['item_buy_num'] == item['limit_buy_count']:
+                # Sold out
+                continue
+            item_id = item['item_id']
+            icon_src = mant_imgs.get(f'scenario_free_item_icon_{item_id:05}', '')
+            description = constants.MANT_ITEM_ID_TO_DESCRIPTION.get(item_id, '')
+            modifier = constants.MANT_ITEM_ID_TO_MODIFIER.get(item_id, '')
+
+            # Turns left badge
+            turns_left = self._get_mant_turns_left(item, main_info['turn'])
+            turn_color = '#e74c3c' if turns_left == 1 else '#e67e22' if turns_left <= 2 else '#888'
+            turns_badge = (
+                f'<div style="position:absolute;top:-2px;right:-2px;'
+                f'background:{turn_color};color:#fff;font-size:0.6rem;font-weight:700;'
+                f'min-width:14px;height:14px;line-height:14px;text-align:center;'
+                f'border-radius:7px;padding:0 2px;z-index:2;">'
+                f'{turns_left}</div>'
+            )
+
+            # Coin cost badge
+            can_afford = main_info['coin_num'] >= item['coin_num']
+            cost_color = '#ccc' if can_afford else '#e74c3c'
+            coin_badge = (
+                f'<div style="position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);'
+                f'background:rgba(0,0,0,0.7);color:{cost_color};font-size:0.55rem;font-weight:700;'
+                f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
+                f'{item["coin_num"]}</div>'
+            )
+
+            # Modifier label for shared-icon items (megaphones, cleat hammers)
+            modifier_label = ""
+            if modifier:
+                modifier_label = (
+                    f'<div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);'
+                    f'background:rgba(0,0,0,0.75);color:#ffd700;font-size:0.5rem;font-weight:700;'
+                    f'padding:0 2px;border-radius:3px;white-space:nowrap;z-index:2;line-height:1.2;">'
+                    f'{modifier}</div>'
+                )
+
+            # Owned count badge
+            owned_badge = ""
+            # owned_count = inventory.get(item_id, 0)
+            # if owned_count > 0:
+            #     owned_badge = (
+            #         f'<div style="position:absolute;top:-2px;left:-2px;'
+            #         f'background:rgba(0,0,0,0.7);color:#7bed9f;font-size:0.55rem;font-weight:700;'
+            #         f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
+            #         f'+{owned_count}</div>'
+            #     )
+
+            items_html += (
+                f'<div title="{description}" style="position:relative;flex:0 0 auto;'
+                f'width:36px;height:36px;cursor:default;">'
+                f'<img src="{icon_src}" width="32" height="32" '
+                f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);'
+                f'{"box-shadow: 0px 0px 10px 7px rgba(255,0,0,0.65); border-radius:4px;\"/>" if num_hammers >= races_left and (item_id == 11001 or item_id == 11002) else "\"/>"}'
+                f'{turns_badge}{coin_badge}{modifier_label}{owned_badge}'
+                f'</div>'
+            )
+
+        # Coin badge at the end
+        coin_src = mant_imgs.get('coin', '')
+        coin_count = main_info['coin_num']
+        sale_indicator = ""
+        sale_val = main_info.get('sale_value', 0)
+        if sale_val > 0:
+            sale_indicator = (
+                f'<div style="position:absolute;top:-4px;right:-6px;'
+                'background:linear-gradient(135deg,#ff6b8f,#ff3b6f);'
+                'color:#fff;font-weight:700;font-size:0.5rem;line-height:1;'
+                'padding:2px 3px;border-radius:4px;'
+                'box-shadow:0 1px 3px rgba(0,0,0,.3);z-index:10;'
+                f'pointer-events:none;white-space:nowrap;">{sale_val}%</div>'
+            )
+        coin_badge_html = (
+            f'<div style="position:relative;flex:0 0 auto;'
+            f'width:36px;height:36px;cursor:default;">'
+            f'<img src="{coin_src}" width="32" height="32" '
+            f'style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"/>'
+            f'<div style="position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);'
+            f'background:rgba(0,0,0,0.7);color:#ffd700;font-size:0.6rem;font-weight:700;'
+            f'padding:0 3px;border-radius:4px;white-space:nowrap;z-index:2;line-height:1.2;">'
+            f'{coin_count}</div>'
+            f'{sale_indicator}'
+            f'</div>'
+        )
+
+        return (
+            f'<div style="display:flex;flex-wrap:wrap;justify-content:center;'
+            f'gap:0.4rem;width:100%;padding:0.2rem 0;">'
+            f'{inv_html}</div>'
+            f'<div style="display:flex;flex-wrap:wrap;justify-content:center;'
+            f'gap:0.4rem;width:100%;padding:0.2rem 0;">'
+            f'{coin_badge_html}{items_html}</div>'
+        )
+
+    def generate_mant_races_div(self, main_info):
+        if main_info['turn'] <= 12 or main_info['turn'] >= 73:
+            # Ignore anything before the debut and during Twinkle Start Climax
+            return ""
+        html_text = "<div style=\"width:100%;\">"
+        races_div = ""
+        mant_imgs = util.get_mant_image_dict()
+
+        races_div += "<div><table style=\"width:100%;white-space:nowrap;\"><thead><tr><th>Grade</th><th>Name</th><th>Surface/Dist</th><th>Rival</th></tr></thead><tbody>"
+        rival_program_ids = [race['program_id'] for race in main_info['rival_race_info_array']]
+        for race in main_info['races']:
+            program_id = race['program_id']
+            race_grade = mdb.get_program_id_grade(program_id)
+
+            if not race_grade:
+                logger.error(f"Race grade not found for program id {program_id}")
+            if race_grade == 800 or race_grade == 700 or race_grade == 400: # Debut/OP/Pre-OP, ignore
+                continue
+            race_img_url = "https://gametora.com/images/umamusume/race_ribbons/utx_txt_grade_ribbon_"
+            if race_grade == 700:
+                race_img_url += "06.png" # Pre-OP
+            elif race_grade == 400:
+                race_img_url += "02.png" # OP
+            elif race_grade == 300:
+                race_img_url += "03.png" # G3
+            elif race_grade == 200:
+                race_img_url += "04.png" # G2
+            elif race_grade == 100:
+                race_img_url += "05.png" # G1
+            else:
+                race_img_url += "07.png" # EX
+            # race_img_url = self.get_thumb_url(program_id)
+            races_div += "<tr>"
+            races_div += f"<td><img src=\"{race_img_url}\" width=\"51\" height=\"18.5\" style=\"vertical-align:middle;\"/></td>"
+            race_aptitudes = self._get_race_aptitudes(mdb.get_race_surface_dict()[program_id], mdb.get_race_distance_dict()[program_id], main_info['uma_aptitudes'])
+            races_div += f"<td { 'style=\"font-weight:bold;\"' if race_aptitudes[0] and race_aptitudes[1] else ''}>{mdb.get_race_name_dict()[program_id]}</td>"
+            races_div += f"<td>{self.get_race_details_text(mdb.get_race_surface_dict()[program_id], mdb.get_race_distance_dict()[program_id], main_info['uma_aptitudes'])}</td>"
+            if program_id in rival_program_ids:
+                races_div += f"<td><img src=\"{mant_imgs['rival']}\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/></td>"
+            else:
+                races_div += f"<td></td>"
+            races_div += "</tr>"
+        races_div += "</tbody></table></div>"
+
+        html_text += races_div
+        html_text += "</div>"
+        return html_text
+
+    def _get_mant_turns_left(self, item, turn):
+        turns_left = 0
+        if item['limit_turn'] == 0:
+            # Normal shop item, refreshes every six turns
+            turns_left = 6 - ((turn - 13) % 6)
+        else:
+            turns_left = item['limit_turn'] - turn + 1 # limit_turn is the last turn it can be bought
+        return turns_left
+
+    def get_turns_left_text(self, item, turn):
+        turns_left = self._get_mant_turns_left(item, turn)
+        return f"<div style=\"{'color:red;' if turns_left == 1 else 'color:orange;' if turns_left == 2 else ''}\">{turns_left}</div>"
+
+    def _get_race_aptitudes(self, surface, distance, uma_aptitudes):
+        # C or higher is "good"
+        #
+        # 1=G, 2=F, etc.
+        good_surface = False
+        good_distance = False
+        if surface == 1:
+            if uma_aptitudes["proper_ground_turf"] >= 5:
+                good_surface = True
+        else:
+            if uma_aptitudes["proper_ground_dirt"] >= 5:
+                good_surface = True
+
+        if distance <= 1400:
+            if uma_aptitudes["proper_distance_short"] >= 5:
+                good_distance = True
+        elif distance <= 1800:
+            if uma_aptitudes["proper_distance_mile"] >= 5:
+                good_distance = True
+        elif distance <= 2400:
+            if uma_aptitudes["proper_distance_middle"] >= 5:
+                good_distance = True
+        else:
+            if uma_aptitudes["proper_distance_long"] >= 5:
+                good_distance = True
+
+        return good_surface, good_distance
+
+    def get_race_details_text(self, surface, distance, uma_aptitudes):
+        surface_text = ""
+        good_surface, good_distance = self._get_race_aptitudes(surface, distance, uma_aptitudes)
+        distance_text = ""
+        if surface == 1:
+            surface_text = "Turf"
+        else:
+            surface_text = "Dirt"
+        if good_surface:
+            surface_text = f"<div style=\"color:lightgreen;\">{surface_text}</div>"
+        else:
+            surface_text = f"<div style=\"color:orange;\">{surface_text}</div>"
+
+        if good_distance:
+            distance_text = f"<div style=\"color:lightgreen;\">{distance}m</div>"
+        else:
+            distance_text = f"<div style=\"color:orange;\">{distance}m</div>"
+
+        return f"<div style=\"display:flex; justify-content:space-around;{'font-weight:bold;' if good_distance and good_surface else ''}\">" + surface_text + "<div>-</div>" + distance_text + "</div>"
+
+    def grade_to_pts(self, grade):
+        if grade == 700:
+            return "20"  # Pre-OP
+        elif grade == 400:
+            return "40"  # OP
+        elif grade == 300:
+            return "60"  # G3
+        elif grade == 200:
+            return "80"  # G2
+        elif grade == 100:
+            return "100"  # G1
+        else:
+            return "-"
+
+    def get_thumb_url(self, program_id):
+        program_data = mdb.get_program_id_data(program_id)
+        if not program_data:
+            util.show_warning_box(f"Could not get program data for program_id {program_id}")
+            return None
+
+        if program_data['base_program_id'] != 0:
+            program_data = mdb.get_program_id_data(program_data['base_program_id'])
+
+        if not program_data:
+            util.show_warning_box(f"Could not get program data for program_id {program_id}")
+            return None
+
+        thumb_url = f"https://gametora.com/images/umamusume/{'en/' if 'IS_UL_GLOBAL' in os.environ else ''}race_banners/thum_race_rt_000_{str(program_data['race_instance_id'])[:4]}_00.png"
+        return thumb_url
+
     def to_dict(self):
         return {
             "name": self.name,

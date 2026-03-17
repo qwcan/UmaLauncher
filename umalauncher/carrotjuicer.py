@@ -862,7 +862,6 @@ class CarrotJuicer:
                     for message in messages:
                         self.process_message(message)
                 else:
-                    logger.debug("Waiting for message...")
                     try:
                         ready = select.select([self.sock], [], [], 0.5)
                         if ready[0]:
