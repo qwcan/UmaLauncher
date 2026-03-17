@@ -612,13 +612,8 @@ class Preset():
         return f"<div id='gff' style='display:flex; flex-flow: column; justify-content:center; align-items:center; gap: 0.5rem;'>{internal}</div>"
 
     def generate_mant(self, main_info):
-        #logger.info(main_info)
         if main_info['scenario_id'] != 4:
             return ""
-
-        # TODO: is a coin display needed, or is it sufficient to just show which items can be bought?
-        #if main_info['coin_num'] > 0:
-        #    html_text += f"<div style=\"display:flex; align-items:center; gap:0.25rem;\"><img src=\"{mant_imgs['coin']}\" width=\"32\" height=\"32\"/>Coins: {main_info['coin_num']}</div>"
 
         shop_div = self.generate_mant_shop_div(main_info)
         races_div = self.generate_mant_races_div(main_info)
@@ -800,7 +795,6 @@ class Preset():
         races_div += "<div><table style=\"width:100%;white-space:nowrap;\"><thead><tr><th>Grade</th><th>Name</th><th>Surface/Dist</th><th>Rival</th></tr></thead><tbody>"
         rival_program_ids = [race['program_id'] for race in main_info['rival_race_info_array']]
         for race in main_info['races']:
-            #logger.info( "Race: " + str(race) )
             program_id = race['program_id']
             race_grade = mdb.get_program_id_grade(program_id)
 
@@ -824,7 +818,6 @@ class Preset():
             # race_img_url = self.get_thumb_url(program_id)
             races_div += "<tr>"
             races_div += f"<td><img src=\"{race_img_url}\" width=\"51\" height=\"18.5\" style=\"vertical-align:middle;\"/></td>"
-            #TODO: race names can be really long, are they needed? The thumbnail could be a compromise, but it's pretty big as well
             race_aptitudes = self._get_race_aptitudes(mdb.get_race_surface_dict()[program_id], mdb.get_race_distance_dict()[program_id], main_info['uma_aptitudes'])
             races_div += f"<td { 'style=\"font-weight:bold;\"' if race_aptitudes[0] and race_aptitudes[1] else ''}>{mdb.get_race_name_dict()[program_id]}</td>"
             races_div += f"<td>{self.get_race_details_text(mdb.get_race_surface_dict()[program_id], mdb.get_race_distance_dict()[program_id], main_info['uma_aptitudes'])}</td>"

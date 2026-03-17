@@ -782,7 +782,6 @@ class HelperTable():
             if 'sale_value' in free_data:
                 sale_value = free_data['sale_value']
             # Shop (shop_item_id, item_id, coin_num, original_coin_num, item_buy_num (1=sold out), limit_buy_count, limit_turn)
-            # TODO: how to get turns left?
             if 'pick_up_item_info_array' in free_data and free_data['pick_up_item_info_array'] is not None:
                 pick_up_item_info_array = free_data['pick_up_item_info_array']
             # Inventory (item_id, num)
