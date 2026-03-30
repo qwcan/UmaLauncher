@@ -117,7 +117,7 @@ class TrainingPartner():
         effective_bond = 0
 
         if 6 < self.partner_id <= 1000:
-            if self.partner_id in (102,) and not self.chara_info['scenario_id'] in (6,):  # Disable Akikawa usefulness in certain scenarios
+            if self.partner_id in (102,) and not self.chara_info['scenario_id'] in (1, 6, 4):  # Disable Akikawa usefulness in certain scenarios
                 usefulness_cutoff = 60
             else:
                 # Skip all non-Umas except Akikawa
@@ -180,9 +180,14 @@ class HelperTable():
         command_info = {}
 
         all_commands = {}
-        
+
+        def get_commands(scenario_name):
+            if 'command_info_array' in data[scenario_name] and data[scenario_name]['command_info_array'] is not None:
+                return data[scenario_name]['command_info_array']
+            return []
+
         # Default commands
-        for command in data['home_info']['command_info_array']:
+        for command in get_commands('home_info'):
             all_commands[command['command_id']] = copy.deepcopy(command)
         
         # Scenario specific commands
@@ -201,8 +206,8 @@ class HelperTable():
 
         for key in data:
             if key.endswith("_data_set") and 'command_info_array' in data[key]:
-                for command in data[key]['command_info_array']:
-                    if 'params_inc_dec_info_array' in command:
+                for command in get_commands(key):
+                    if 'params_inc_dec_info_array' in command and command['params_inc_dec_info_array'] is not None:
                         # FIXME: make a proper fix for this. Maybe deepcopy the command if it's missing?
                         if command['command_id'] not in all_commands:
                             continue
@@ -210,7 +215,7 @@ class HelperTable():
 
 
         # Venus specific
-        if 'venus_data_set' in data:
+        if 'venus_data_set' in data and data['venus_data_set']['venus_chara_command_info_array'] is not None:
             for spirit_data in data['venus_data_set']['venus_chara_command_info_array']:
                 if spirit_data['command_id'] in all_commands:
                     all_commands[spirit_data['command_id']]['spirit_data'] = spirit_data
@@ -218,7 +223,7 @@ class HelperTable():
 
         # Grand Live specific
         if 'live_data_set' in data:
-            for command in data['live_data_set']['command_info_array']:
+            for command in get_commands('live_data_set'):
                 all_commands[command['command_id']]['performance_inc_dec_info_array'] = command['performance_inc_dec_info_array']
         
 
@@ -250,12 +255,12 @@ class HelperTable():
 
         # Onsen
         if 'onsen_data_set' in data:
-            for command in data['onsen_data_set']['command_info_array']:
+            for command in get_commands('onsen_data_set'):
                 all_commands[command['command_id']]['dig_info_array'] = command['dig_info_array']
 
         # Beyond Dreams (Breeder's Cup)
         if 'breeders_data_set' in data:
-            for command in data['breeders_data_set']['command_info_array']:
+            for command in get_commands('breeders_data_set'):
                 all_commands[command['command_id']]['team_member_info_array'] = command['team_member_info_array']
                 all_commands[command['command_id']]['turn'] = data['chara_info']['turn']
                 for idx, member in enumerate(all_commands[command['command_id']]['team_member_info_array']):
@@ -265,7 +270,7 @@ class HelperTable():
 
         # Aoharu
         if 'team_data_set' in data:
-            for command in data['team_data_set']['command_info_array']:
+            for command in get_commands('team_data_set'):
                 all_commands[command['command_id']]['guide_event_partner_array'] = command['guide_event_partner_array']
                 all_commands[command['command_id']]['soul_event_partner_array'] = command['soul_event_partner_array']
 
@@ -283,7 +288,7 @@ class HelperTable():
         # Onsen
         if 'onsen_data_set' in data:
             onsen_data = data['onsen_data_set']
-            for command_data in onsen_data.get('command_info_array', []):
+            for command_data in get_commands('onsen_data_set'):
                 command_id = command_data['command_id']
                 command_key = constants.COMMAND_ID_TO_KEY.get(command_id, None)
                 if command_key and command_key in command_info and 'dig_info_array' in command_data:
@@ -328,13 +333,14 @@ class HelperTable():
             onsen_points_gain = 0
             team_member_info_array = {}
 
-            for param in command.get('params_inc_dec_info_array', []):
-                if param['target_type'] < 6:
-                    gained_stats[constants.TARGET_TYPE_TO_KEY[param['target_type']]] += param['value']
-                elif param['target_type'] == 30:
-                    gained_skillpt += param['value']
-                elif param['target_type'] == 10:
-                    gained_energy += param['value']
+            if 'params_inc_dec_info_array' in command and command['params_inc_dec_info_array'] is not None:
+                for param in command.get('params_inc_dec_info_array', []):
+                    if param['target_type'] < 6:
+                        gained_stats[constants.TARGET_TYPE_TO_KEY[param['target_type']]] += param['value']
+                    elif param['target_type'] == 30:
+                        gained_skillpt += param['value']
+                    elif param['target_type'] == 10:
+                        gained_energy += param['value']
 
 
             # Set up "training partners" for SS Match
@@ -444,7 +450,7 @@ class HelperTable():
             gl_tokens = {token_type: 0 for token_type in constants.GL_TOKEN_LIST}
             # Grand Live tokens
             if 'live_data_set' in data:
-                for token_data in command['performance_inc_dec_info_array']:
+                for token_data in command.get('performance_inc_dec_info_array', []):
                     gl_tokens[constants.GL_TOKEN_LIST[token_data['performance_type']-1]] += token_data['value']
 
 
@@ -568,12 +574,12 @@ class HelperTable():
             # Onsen
             if 'onsen_data_set' in data:
                 if 'dig_info_array' in command:
-                    onsen_points_gain += sum(dig_info['dig_value'] for dig_info in command['dig_info_array'])
+                    onsen_points_gain += sum(dig_info['dig_value'] for dig_info in command.get('dig_info_array', []))
 
             # Beyond Dreams (Breeder's Cup)
             has_ssr_casino_drive = False
             if 'breeders_data_set' in data:
-                team_member_info_array = command['team_member_info_array']
+                team_member_info_array = command.get('team_member_info_array', [])
                 #rank_up_predict = command['rank_up_predict']
                 for card in data['chara_info']['support_card_array']:
                     if card["support_card_id"] == 30290:
@@ -744,7 +750,7 @@ class HelperTable():
             for command_data in dyi_data.get('command_info_array', []):
                 command_id = command_data['command_id']
                 command_key = constants.COMMAND_ID_TO_KEY.get(command_id, None)
-                if command_key and command_key in command_info and 'params_inc_dec_info_array' in command_data:
+                if command_key and command_key in command_info and 'params_inc_dec_info_array' in command_data and command_data['params_inc_dec_info_array'] is not None:
                     command_info[command_key]['params_inc_dec_info_array'] = command_data['params_inc_dec_info_array']
                     #logger.info(f"Command {command_key} : {command_data['params_inc_dec_info_array']}")
             for point_gain_data in dyi_data.get('pioneer_point_gain_info_array', []):

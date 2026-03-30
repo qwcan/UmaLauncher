@@ -1382,6 +1382,7 @@ class UmaErrorPopup(qtw.QMessageBox):
         self.show()
 
 
+    # TODO: add option to attach packet data? Could be useful for debugging
     def upload_error_report(self, traceback_str, user_id):
 
         # Run this on a thread so the UI doesn't block (request takes a while because the bot needs to connect to Discord)
