@@ -209,7 +209,9 @@ class HelperTable():
                 for command in get_commands(key):
                     if 'params_inc_dec_info_array' in command and command['params_inc_dec_info_array'] is not None:
                         # FIXME: make a proper fix for this. Maybe deepcopy the command if it's missing?
-                        if command['command_id'] not in all_commands:
+                        if command['command_id'] not in all_commands \
+                                or 'params_inc_dec_info_array' not in all_commands[command['command_id']] \
+                                or all_commands[command['command_id']]['params_inc_dec_info_array'] is None:
                             continue
                         all_commands[command['command_id']]['params_inc_dec_info_array'] += command['params_inc_dec_info_array']
 
