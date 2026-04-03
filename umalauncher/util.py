@@ -728,3 +728,36 @@ def get_game_variant_string():
         return "JP Steam"
     else:
         return "DMM"
+
+commit_hash = None
+branch = None
+build_date = None
+def get_commit_hash(force=False):
+    global commit_hash
+    if force or commit_hash is None:
+        file_path = get_asset("_assets/commit_hash.txt")
+        if os.path.exists(file_path):
+            commit_hash = open(file_path, 'r').read().strip()
+    if commit_hash is None:
+        return "(Unknown)"
+    return commit_hash
+
+def get_branch(force=False):
+    global branch
+    if force or branch is None:
+        file_path = get_asset("_assets/branch.txt")
+        if os.path.exists(file_path):
+            branch = open(file_path, 'r').read().strip()
+    if branch is None:
+        return "(Unknown)"
+    return branch
+
+def get_build_date(force=False):
+    global build_date
+    if force or build_date is None:
+        file_path = get_asset("_assets/build_date.txt")
+        if os.path.exists(file_path):
+            build_date = open(file_path, 'r').read().strip()
+    if build_date is None:
+        return "(Unknown)"
+    return build_date
