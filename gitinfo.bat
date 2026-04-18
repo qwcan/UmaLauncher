@@ -7,4 +7,5 @@ if %errorlevel% neq 0 (
 )
 git rev-parse --short HEAD > commit_hash.txt
 powershell -Command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss K'" > build_date.txt
+git remote get-url origin > remote_url.txt
 cd ../..

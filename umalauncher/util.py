@@ -732,6 +732,7 @@ def get_game_variant_string():
 commit_hash = None
 branch = None
 build_date = None
+remote_url  = None
 def get_commit_hash(force=False):
     global commit_hash
     if force or commit_hash is None:
@@ -759,5 +760,15 @@ def get_build_date(force=False):
         if os.path.exists(file_path):
             build_date = open(file_path, 'r').read().strip()
     if build_date is None:
+        return "(Unknown)"
+    return build_date
+
+def get_remote_url(force=False):
+    global remote_url
+    if force or remote_url is None:
+        file_path = get_asset("_assets/remote_url.txt")
+        if os.path.exists(file_path):
+            remote_url = open(file_path, 'r').read().strip()
+    if remote_url is None:
         return "(Unknown)"
     return build_date
