@@ -1401,7 +1401,7 @@ class UmaErrorPopup(qtw.QMessageBox):
         version_str = version.VERSION
         if util.is_script:
             version_str += ".script"
-        version_str += " (" + util.get_game_variant_string() + ")"
+        version_str += f" ({util.get_game_variant_string()}), commit {util.get_commit_hash()} on branch {util.get_branch()}, built on {util.get_build_date()}"
         thread = threading.Thread(target=do_error_request, args = ( "https://umalauncher.uc.r.appspot.com/api/v2/umalauncher/error", {"traceback": traceback_str, "user_id": user_id, "version": version_str} ) )
         thread.start()
 
@@ -1412,7 +1412,7 @@ class AboutDialog(UmaMainDialog):
 
         super().init_ui(*args, **kwargs)
 
-        self.resize(481 + 210, 401)
+        self.resize(481 + 210, 431)
         self.setFixedSize(self.size())
         self.verticalLayoutWidget = qtw.QWidget(self)
         self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
@@ -1442,6 +1442,16 @@ class AboutDialog(UmaMainDialog):
         self.lbl_version.setAlignment(qtc.Qt.AlignCenter)
 
         self.verticalLayout.addWidget(self.lbl_version)
+
+        self.lbl_version_detail = qtw.QLabel(self.verticalLayoutWidget)
+        self.lbl_version_detail.setObjectName(u"lbl_version_detail")
+        sizePolicy.setHeightForWidth(self.lbl_version_detail.sizePolicy().hasHeightForWidth())
+        self.lbl_version_detail.setSizePolicy(sizePolicy)
+        self.lbl_version_detail.setLayoutDirection(qtc.Qt.LeftToRight)
+        self.lbl_version_detail.setText(f"Commit {util.get_commit_hash()}, built on {util.get_build_date()}")
+        self.lbl_version_detail.setAlignment(qtc.Qt.AlignCenter)
+
+        self.verticalLayout.addWidget(self.lbl_version_detail)
 
         self.lbl_about = qtw.QLabel(self.verticalLayoutWidget)
         self.lbl_about.setObjectName(u"lbl_about")
