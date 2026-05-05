@@ -469,11 +469,33 @@ class CarrotJuicer:
                         self.browser.execute_script("""document.getElementById("boxSupportExtra").click();""")
                         self.browser.execute_script(
                             """
-                                var cont = document.querySelector('[class^="filters_hide"]').parentElement.parentElement.parentElement;
-                                var rSupportsCheckbox = cont.querySelector('[id*="ShowR"]');
+                                var cont = document.querySelector('button[data-modal-tab="all"]').parentElement.parentElement.parentElement;
+                                if( !cont )
+                                {
+                                    //Should work on other languages that don't have the all/owned tabs (e.g. JP)
+                                    cont = document.querySelector('div[class*="filters_checkbox"]').parentElement.parentElement.parentElement.parentElement;
+                                }
+                                var allButton = cont.querySelector('button[data-modal-tab="all"]')
+                                if( allButton ) {
+                                    allButton.click();
+                                }
                                 var showUpcomingSupportsCheckbox = cont.querySelector('[id*="showUpcoming"]');
                                 var onlyOwned = cont.querySelector('[id*="onlyOwned"]');
-                                var filtersDiv = document.querySelector('[class^="filters_hide"]').parentElement.parentElement;
+                                var supportFiltersDiv = cont.querySelector('[id*="spo_rarity_3"]')?.parentElement?.parentElement;
+                                var filtersDiv = supportFiltersDiv?.previousSibling;
+                                
+                                if( supportFiltersDiv ) 
+                                {
+                                    for( var i = 0; i < supportFiltersDiv.children.length; i++ )
+                                    {
+                                        var filter = supportFiltersDiv.children[i]?.querySelector('label');
+                                        if( filter && filter.className.includes("_active") )
+                                        {
+                                            filter.click();
+                                        }
+                                    }
+                                }
+                                
                                 if( filtersDiv ) 
                                 {
                                     for( var i = 0; i < filtersDiv.children.length; i++ )
@@ -485,14 +507,8 @@ class CarrotJuicer:
                                         }
                                     }
                                 }
-                                if( rSupportsCheckbox && !rSupportsCheckbox.checked ) {
-                                    rSupportsCheckbox.click(); 
-                                }
                                 if( showUpcomingSupportsCheckbox && !showUpcomingSupportsCheckbox.checked ) {
                                     showUpcomingSupportsCheckbox.click(); 
-                                }
-                                if( onlyOwned && onlyOwned.checked ) {
-                                    onlyOwned.click(); 
                                 }
                                 
                                 var ele = document.getElementById(arguments[0].toString());
