@@ -397,7 +397,7 @@ class Preset():
         
         inner = ''.join(partners)
 
-        return f"<div id=\"support-bonds\" style=\"max-width: 100vw; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap:0.3rem;\">{inner}</div>"
+        return f"<div id=\"support-bonds\" style=\"max-width: 100vw; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap:0.3rem; scrollbar-width: none;\">{inner}</div>"
 
     def generate_gm_table(self, main_info):
         if main_info['scenario_id'] != 5:
