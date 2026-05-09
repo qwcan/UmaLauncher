@@ -390,9 +390,9 @@ class CarrotJuicer:
                     training_id = data['chara_info']['start_time']
                 else:
                     #TODO: fix this!
-                    logger.debug("No start_time, using strftime")
+                    logger.warning("No start_time, using strftime")
                     training_id = time.strftime("%Y-%m-%d %H:%M:%S")
-                if 'IS_UL_GLOBAL' not in os.environ and (not self.training_tracker or not self.training_tracker.training_id_matches(training_id)):
+                if not self.training_tracker or not self.training_tracker.training_id_matches(training_id):
                     # Update cached dicts first
                     mdb.update_mdb_cache()
 
@@ -469,52 +469,61 @@ class CarrotJuicer:
                         self.browser.execute_script("""document.getElementById("boxSupportExtra").click();""")
                         self.browser.execute_script(
                             """
-                                var cont = document.querySelector('button[data-modal-tab="all"]').parentElement.parentElement.parentElement;
+                                var cont = document.querySelector('button[data-modal-tab="all"]')?.parentElement?.parentElement?.parentElement;
                                 if( !cont )
                                 {
                                     //Should work on other languages that don't have the all/owned tabs (e.g. JP)
-                                    cont = document.querySelector('div[class*="filters_checkbox"]').parentElement.parentElement.parentElement.parentElement;
+                                    cont = document.querySelector('div[class*="filters_checkbox"]')?.parentElement?.parentElement?.parentElement?.parentElement;
                                 }
-                                var allButton = cont.querySelector('button[data-modal-tab="all"]')
-                                if( allButton ) {
-                                    allButton.click();
-                                }
-                                var showUpcomingSupportsCheckbox = cont.querySelector('[id*="showUpcoming"]');
-                                var onlyOwned = cont.querySelector('[id*="onlyOwned"]');
-                                var supportFiltersDiv = cont.querySelector('[id*="spo_rarity_3"]')?.parentElement?.parentElement;
-                                var filtersDiv = supportFiltersDiv?.previousSibling;
-                                
-                                if( supportFiltersDiv ) 
+                                if( cont )
                                 {
-                                    for( var i = 0; i < supportFiltersDiv.children.length; i++ )
+                                    var allButton = cont.querySelector('button[data-modal-tab="all"]')
+                                    if( allButton ) {
+                                        allButton.click();
+                                    }
+                                    var showUpcomingSupportsCheckbox = cont.querySelector('[id*="showUpcoming"]');
+                                    var onlyOwned = cont.querySelector('[id*="onlyOwned"]');
+                                    var supportFiltersDiv = cont.querySelector('[id*="spo_rarity_3"]')?.parentElement?.parentElement;
+                                    var filtersDiv = supportFiltersDiv?.previousSibling;
+                                    
+                                    if( supportFiltersDiv ) 
                                     {
-                                        var filter = supportFiltersDiv.children[i]?.querySelector('label');
-                                        if( filter && filter.className.includes("_active") )
+                                        for( var i = 0; i < supportFiltersDiv.children.length; i++ )
                                         {
-                                            filter.click();
+                                            var filter = supportFiltersDiv.children[i]?.querySelector('label');
+                                            if( filter && filter.className.includes("_active") )
+                                            {
+                                                filter.click();
+                                            }
                                         }
+                                    }
+                                    
+                                    if( filtersDiv ) 
+                                    {
+                                        for( var i = 0; i < filtersDiv.children.length; i++ )
+                                        {
+                                            var filter = filtersDiv.children[i]?.querySelector('label');
+                                            if( filter && filter.className.includes("_active") )
+                                            {
+                                                filter.click();
+                                            }
+                                        }
+                                    }
+                                    if( showUpcomingSupportsCheckbox && !showUpcomingSupportsCheckbox.checked ) {
+                                        showUpcomingSupportsCheckbox.click(); 
                                     }
                                 }
                                 
-                                if( filtersDiv ) 
-                                {
-                                    for( var i = 0; i < filtersDiv.children.length; i++ )
-                                    {
-                                        var filter = filtersDiv.children[i]?.querySelector('label');
-                                        if( filter && filter.className.includes("_active") )
-                                        {
-                                            filter.click();
-                                        }
-                                    }
-                                }
-                                if( showUpcomingSupportsCheckbox && !showUpcomingSupportsCheckbox.checked ) {
-                                    showUpcomingSupportsCheckbox.click(); 
-                                }
                                 
                                 var ele = document.getElementById(arguments[0].toString());
 
                                 if (ele) {
                                     ele.click();
+                                    return;
+                                }
+                                if( !cont )
+                                {
+                                    //Avoid an error, but user will have to close it manually
                                     return;
                                 }
                                 cont.parentElement.parentElement.querySelector('img[src="/images/ui/close.png"]').click();
