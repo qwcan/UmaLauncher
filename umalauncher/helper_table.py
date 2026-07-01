@@ -18,21 +18,23 @@ class TrainingPartner():
         if partner_id < 100:
             support_id = chara_info['support_card_array'][partner_id - 1]['support_card_id']
             support_card_dict = mdb.get_support_card_dict()
+            found_support = False
             if support_id not in support_card_dict:
                 logger.warning(f"Could not find support_id {support_id}, attempting to force an update")
                 support_card_dict = mdb.get_support_card_dict(force=True)
                 if support_id not in support_card_dict:
                     logger.error(f"Could not find support_id {support_id} after forced update")
-                    # TODO: handle this better
-                    util.show_error_box("Error", f"Could not find a support card with id {support_id} in game database ({mdb.get_db_path()}). Try restarting the game and Uma Launcher, and make sure the game is up to date. If that doesn't work, try downloading all game data from the options menu.")
-                    raise Exception(f"Could not find support_id {support_id} after forced update")
+                    self.img = "https://umapyoi.net/missing_chara.png"
                 else:
                     logger.info(f"Successfully found support_id {support_id}")
-
-            support_data = support_card_dict[support_id]
-            chara_id = support_data[3]
-            self.chara_id = chara_id
-            self.img = f"https://gametora.com/images/umamusume/characters/icons/chr_icon_{chara_id}.png"
+                    found_support = True
+            else:
+                found_support = True
+            if found_support:
+                support_data = support_card_dict[support_id]
+                chara_id = support_data[3]
+                self.chara_id = chara_id
+                self.img = f"https://gametora.com/images/umamusume/characters/icons/chr_icon_{chara_id}.png"
         elif partner_id > 1000:
             self.chara_id = partner_id
             self.img = f"https://gametora.com/images/umamusume/characters/icons/chr_icon_{partner_id}.png"
