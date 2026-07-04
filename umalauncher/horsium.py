@@ -353,7 +353,7 @@ class BrowserWindow:
     def close(self):
         # Only close the active tab
         try:
-            if self.active_tab_handle in self.driver.window_handles:
+            if self.driver is not None and self.active_tab_handle in self.driver.window_handles:
                 self.driver.switch_to.window(self.active_tab_handle)
                 self.last_window_rect = self.driver.get_window_rect()
                 self.driver.close()

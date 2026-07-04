@@ -1,14 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_submodules
 
 block_cipher = None
 
+hidden_imports = collect_submodules('selenium')
 
 a = Analysis(
     ['threader.py'],
     pathex=['venv\\Lib\\site-packages'],
     binaries=[],
     datas=[('./_assets/icon/global/default.ico', '.'), ('./_assets/icon/global/connecting.ico', '.'), ('./_assets/icon/global/connected.ico', '.')],
-    hiddenimports=[],
+    hiddenimports=hidden_imports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=['global_runtime_hook.py'],
