@@ -15,7 +15,6 @@ import win32con
 import win32gui
 from loguru import logger
 from selenium.common.exceptions import WebDriverException
-import selenium
 from selenium import webdriver
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 from selenium.webdriver.firefox.service import Service as FirefoxService
