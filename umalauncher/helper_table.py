@@ -272,6 +272,14 @@ class HelperTable():
                     all_commands[command['command_id']]['team_member_info_array'][idx]['rank'] = team_member[0]['rank']
                     all_commands[command['command_id']]['team_member_info_array'][idx]['exp'] = team_member[0]['exp']
 
+        # Ramen
+        feeling_turn_info_array = []
+        if 'ramen_data_set' in data and 'feeling_reduce_turn_info_array' in data['ramen_data_set']:
+            feeling_turn_info_array = data['ramen_data_set']['feeling_turn_info_array']
+
+            for command in get_commands('ramen_data_set'):
+                all_commands[command['command_id']]['feeling_turn_array'] = next((x['feeling_turn_array'] for x in data['ramen_data_set']['feeling_reduce_turn_info_array'] if x['command_id'] == command['command_id'] ), None)
+
         # Aoharu
         if 'team_data_set' in data:
             for command in get_commands('team_data_set'):
@@ -590,6 +598,11 @@ class HelperTable():
                         has_ssr_casino_drive = True
                         break
 
+            # Ramen
+            feeling_turn_array = []
+            if "ramen_data_set" in data:
+                feeling_turn_array = command.get("feeling_turn_array", [])
+
             command_info[command['command_id']] = {
                 'scenario_id': scenario_id,
                 'current_stats': current_stats,
@@ -619,6 +632,8 @@ class HelperTable():
                 'turn': turn,
                 'unity_near_explode_partner_count': unity_near_explode_partner_count,
                 'riko_count': riko_count,
+                'feeling_turn_array': feeling_turn_array,
+                'feeling_turn_info_array': feeling_turn_info_array
             }
 
         # Simplify everything down to a dict with only the keys we care about.
@@ -850,7 +865,8 @@ class HelperTable():
             'user_item_info_array': user_item_info_array,
             'rival_race_info_array': rival_race_info_array,
             'coin_num': coin_num,
-            'sale_value': sale_value
+            'sale_value': sale_value,
+            'feeling_turn_info_array': feeling_turn_info_array
         }
 
         # Update preset if needed.

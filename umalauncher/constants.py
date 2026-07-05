@@ -11,7 +11,8 @@ SCENARIO_DICT = {
     10: "The Twinkle Legends",
     11: "Design Your Island",
     12: "Yukoma Hot Springs",
-    13: "Beyond Dreams"
+    13: "Beyond Dreams",
+    14: "Ramen" # This isn't the real scenario name, but it's way less wordy than a translation of 「らっしゃい！トレセン軒！ ～恩返し、始めました～」
 }
 
 MOTIVATION_DICT = {

@@ -679,6 +679,14 @@ def get_mant_image_dict(force=False):
         mant_image_dict.update(assets_folder_images_to_dict("_assets/mant"))
     return mant_image_dict
 
+ramen_image_dict = {}
+def get_ramen_image_dict(force=False):
+    global ramen_image_dict
+    if force or not ramen_image_dict:
+        logger.debug("Loading Ramen images...")
+        ramen_image_dict.update(assets_folder_images_to_dict("_assets/ramen"))
+    return ramen_image_dict
+
 GROUP_SUPPORT_ID_TO_PASSION_ZONE_EFFECT_ID_DICT = {}
 def get_group_support_id_to_passion_zone_effect_id_dict(force=False):
     global GROUP_SUPPORT_ID_TO_PASSION_ZONE_EFFECT_ID_DICT
