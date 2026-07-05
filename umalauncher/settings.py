@@ -230,6 +230,13 @@ class DefaultSettings(se.NewSettings):
             se.SettingType.FILEDIALOG,
             tab="Event Helper"
         ),
+        "browser_version": se.Setting(
+          "Browser version",
+            "Version of the browser to use for the Automatic Training Event Helper.<br>Leave empty to let Selenium use the latest available version.",
+            None,
+            se.SettingType.STRING,
+            tab="Event Helper"
+        ),
         "training_helper_table_preset": se.Setting(
             "Training helper table preset",
             "Preset to use for the Automatic Training Event Helper.",
