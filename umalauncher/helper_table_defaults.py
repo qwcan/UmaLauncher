@@ -1517,6 +1517,15 @@ class RamenExpertiseRow(hte.Row):
     def to_tr(self, game_state):
         if list(game_state.values())[0]['scenario_id'] != 14:
             return ""
+        # Hide if no data (URA) finale
+        has_data = True
+        for command_key, command_data in game_state.items():
+            if not 'feeling_turn_array' in command_data or not 'feeling_turn_info_array' in command_data:
+                has_data = False
+            elif command_data['feeling_turn_array'] == [] or command_data['feeling_turn_info_array'] == []:
+                has_data = False
+        if not has_data:
+            return ""
         # This actually generates 3 rows, so we need to override the default behavior
         td1 = ''.join(cell.to_td() for cell in self.generate_row_cells(game_state, '1'))
         td2 = ''.join(cell.to_td() for cell in self.generate_row_cells(game_state, '2'))

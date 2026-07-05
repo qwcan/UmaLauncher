@@ -278,7 +278,7 @@ class HelperTable():
             feeling_turn_info_array = data['ramen_data_set']['feeling_turn_info_array']
 
             for command in get_commands('ramen_data_set'):
-                all_commands[command['command_id']]['feeling_turn_array'] = next((x['feeling_turn_array'] for x in data['ramen_data_set']['feeling_reduce_turn_info_array'] if x['command_id'] == command['command_id'] ), None)
+                all_commands[command['command_id']]['feeling_turn_array'] = next((x['feeling_turn_array'] for x in data['ramen_data_set']['feeling_reduce_turn_info_array'] if x['command_id'] == command['command_id'] ), [])
 
         # Aoharu
         if 'team_data_set' in data:
