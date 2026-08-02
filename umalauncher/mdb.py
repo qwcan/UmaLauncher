@@ -24,7 +24,7 @@ def get_db_path():
         game_install_path = util.get_game_folder()
         if game_install_path is None:
             logger.error(f"Could not find game install path")
-            util.show_error_box_no_report("Error",f"Could not the game database file at path: {DB_PATH}, and could not find game install directory. Ensure you have the game installed. <br>Uma Launcher will now close.")
+            util.show_error_box_no_report("Error",f"Could not find the game database file at path: {DB_PATH}, and could not find game install directory. Ensure you have the game installed. <br>Uma Launcher will now close.")
             if gui.THREADER:
                 gui.THREADER.stop()
             return DB_PATH

@@ -157,6 +157,11 @@ def do_get_request(url, error_title=None, error_message=None, ignore_timeout=Fal
 
 
 def get_game_folder():
+    if gui.THREADER is not None and gui.THREADER.settings is not None:
+        path = gui.THREADER.settings['game_install_path']
+        if path is not None and path.strip() != "":
+            logger.info(f"Using game install path from settings: {path}")
+            return path
     game_data = None
     try:
         if 'IS_UL_GLOBAL' in os.environ:
